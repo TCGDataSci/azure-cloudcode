@@ -1,0 +1,62 @@
+name: DeployFunctionApp
+
+on:
+  workflow_dispatch:
+    inputs:
+      function_name:
+        description: 'the function to deploy'
+        required: true
+        type: string
+      environment:
+        description: 'environment to deploy (e.g. production, development)'
+        default: 'development'
+        required: false
+        type: string
+      python_version:
+        description: 'Version of python to use'
+        default: '3.11'
+        required: false
+        type: string 
+env:
+  package_path: './functionapps/${{inputs.function_name}}/'
+    
+    
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment: ${{inputs.environment}}
+    steps:
+    - name:
+      id: vars
+      run: |
+        fname=${{inputs.function_name}}
+        ufname=${fname^^}
+        echo "SECRET_NAME=${ufname//-/_}_PUBLISH_PROFILE" >> $GITHUB_OUTPUT
+
+    - name: 'Checkout GitHub Action'
+      uses: actions/checkout@v3
+    
+    - name: Setup Python ${{inputs.python_version}} Environment
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{inputs.python_version}}
+    
+    - name: Create and start virtual environment
+      run: |
+        python -m venv venv
+        source venv/bin/activate
+
+    - name: Resolve project dependencies using pip
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install -r ${{env.package_path}}requirements.txt --target="${{env.package_path}}.python_packages/lib/site-packages"
+
+    - name: Run Azure Functions Action
+      uses: Azure/functions-action@v1
+      id: fa
+      with:
+        app-name: ${{inputs.function_name}}
+        package: ${{env.package_path}}
+        publish-profile: ${{secrets[steps.vars.outputs.SECRET_NAME]}}
+        enable-oryx-build: true 
+        scm-do-build-during-deployment: true
