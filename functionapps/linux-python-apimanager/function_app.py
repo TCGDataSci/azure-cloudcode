@@ -28,25 +28,11 @@ os.environ['psql_username'] = secret_client.get_secret('PSQLUsername').value
 os.environ['psql_password'] = secret_client.get_secret('PSQLPassword').value  
 
 # initialize function app
-dfapp = df.DFApp(http_auth_level=func.AuthLevel.ANONYMOUS)
-
-@dfapp.route(route="apis/{apiEndpoint}")
-@dfapp.durable_client_input(client_name='client')
-async def http_start(req: func.HttpRequest, client:df.DurableOrchestrationClient): 
-    function_name = req.route_params.get('apiEndpoint')
-    instance_id = await client.start_new('scraper_orchestrator', client_input=function_name)
-    response = client.create_check_status_response(req, instance_id) 
-    return response
-
-@dfapp.orchestration_trigger(context_name="context")
-def api_orchestrator(context:df.DurableOrchestrationContext):
-    api_endpoint = context.get_input()
-    result = yield context.call_activity(api_endpoint)
-    return result
+app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
 
-@dfapp.activity_trigger()
-async def sensortower():
+@app.route("apis/sensortower/update")
+async def sensortower_update(req:func.HttpRequest):
     update_freqs = ['daily']
     if (tday:=datetime.today()).weekday()==0:
         update_freqs.append('weekly')
@@ -76,8 +62,8 @@ async def sensortower():
  
 
 # similarweb data update function
-@dfapp.activity_trigger()
-async def similarweb():
+@app.route("apis/similarweb/update")
+async def similarweb_update(req:func.HttpRequest):
     update_freqs = ['daily','monthly']
     if (tday:=datetime.today()).weekday()==0: 
         update_freqs.append('weekly')
@@ -121,10 +107,10 @@ whale = Whalewisdom(whale_shared_key, whale_secret_key, blob_service_client, pg)
 
 
 
-@dfapp.activity_trigger()
-def whalewisdom_13fupdate():
+@app.route("apis/whalewisdom/13fUpdate")
+def whalewisdom_13fupdate(req:func.HttpRequest):
     whale.update_holdings()
 
-@dfapp.activity_trigger()
-def whalewisdom_updatefilers():
+@app.route("apis/whalewisdom/filerUpdate")
+def whalewisdom_updatefilers(req:func.HttpRequest):
     whale.update_filers()

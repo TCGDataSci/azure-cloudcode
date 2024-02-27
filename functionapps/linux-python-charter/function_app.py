@@ -36,7 +36,7 @@ app = func.FunctionApp()
 
 
 
-@app.route("scrape/chtr/zip_code")
+@app.route("scrape/chtr/zip_codes")
 def chtr_zip_code_check(req:func.TimerRequest):
     pg_engine = create_engine(psql_connection.format(user=psql_username, password=psql_password)) 
     zip_codes = pd.read_sql_table('zip_codes', pg_engine, schema='chtr')
