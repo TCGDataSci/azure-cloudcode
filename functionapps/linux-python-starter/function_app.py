@@ -66,6 +66,7 @@ def dutchbros_location_scrape(timer:func.TimerRequest):
     if timer.past_due:
         pass
     response = requests.get("https://linux-python-small-scrapes.azurewebsites.net/api/scrapes/bros/locations")
+    return response
 
 
 @app.timer_trigger('timer', '', run_on_startup=False)
@@ -73,3 +74,4 @@ def avdx_sales_schedule_scrape(timer:func.TimerRequest):
     if timer.past_due:
         pass
     response = requests.get("https://linux-python-small-scrapes.azurewebsites.net/api/scrapes/avdx/salesSchedule") 
+    return response
