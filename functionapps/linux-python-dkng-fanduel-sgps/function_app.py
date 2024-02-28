@@ -15,7 +15,7 @@ from dateutil.relativedelta import relativedelta
 # tcgds imports
 from tcgds.scrapes.dkng import sport_groups_keys, get_events as dkng_get_events, get_event_pre_fabs, get_event_sgps as dkng_get_event_sgps
 from tcgds.scrapes.fanduel import get_events as fanduel_get_events, get_event_sgps as fanduel_get_event_sgps  
-from tcgds.postgres import Postgres
+from tcgds.postgres import Postgres, psql_connection
 
 
 SA_NAME = "maintcgdssa"
@@ -26,7 +26,6 @@ credential = EnvironmentCredential()
 client = SecretClient(vault_url=KVUrl, credential=credential)
 
 # psql constants
-psql_connection = 'postgresql://{user}:{password}@azdspgsql1.postgres.database.azure.com:5432/postgres'
 psql_username = client.get_secret('PSQLUsername').value
 psql_password = client.get_secret('PSQLPassword').value
 sa_key = client.get_secret(SA_KEY_NAME).value
