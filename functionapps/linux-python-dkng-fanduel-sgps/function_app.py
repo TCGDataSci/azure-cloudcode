@@ -34,9 +34,9 @@ sa_key = client.get_secret(SA_KEY_NAME).value
 
 app = func.FunctionApp()
 
-@app.timer_trigger(arg_name="aztimer", schedule="0 0 12 * * *", run_on_startup=False)
-def dkng_sgp_queue_scrape(aztimer: func.TimerRequest):
-    if aztimer.past_due:
+@app.timer_trigger(arg_name="timer", schedule="0 0 12 * * *", run_on_startup=False)
+def dkng_sgp_queue_scrape(timer: func.TimerRequest):
+    if timer.past_due:
         pass
     sa_connection_string = f"DefaultEndpointsProtocol=https;AccountName={SA_NAME};AccountKey={sa_key};EndpointSuffix=core.windows.net"
     queue = QueueClient.from_connection_string(sa_connection_string, "prod2queue")
@@ -60,7 +60,7 @@ def dkng_sgp_queue_scrape(aztimer: func.TimerRequest):
 
 @app.timer_trigger('timer', '0 0 12 * * *', run_on_startup=False)
 def fanduel_sgp_queue_scrape(timer:func.TimerRequest):
-    sa_connection_string = "DefaultEndpointsProtocol=https;AccountName=maintcgdssa;AccountKey=PV80CJQgzOXEQ2AA9nlGirbYoKyoWcvt/Q3f0+sM3HgI4EuPhhqYodMaWfWpcT5XGjtrukhqVnXh+AStqSgTBA==;EndpointSuffix=core.windows.net"
+    sa_connection_string = f"DefaultEndpointsProtocol=https;AccountName={SA_NAME};AccountKey={sa_key};EndpointSuffix=core.windows.net"
     queue = QueueClient.from_connection_string(sa_connection_string, "prod2queue")
     encoder = TextBase64EncodePolicy()
 
