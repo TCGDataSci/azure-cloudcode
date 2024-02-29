@@ -15,8 +15,7 @@ from dateutil.relativedelta import relativedelta
 # tcgds imports
 from tcgds.scrapes.dkng import sport_groups_keys, get_events as dkng_get_events, get_event_pre_fabs, get_event_sgps as dkng_get_event_sgps
 from tcgds.scrapes.fanduel import get_events as fanduel_get_events, get_event_sgps as fanduel_get_event_sgps  
-from tcgds.postgres import Postgres, psql_connection
-
+from tcgds.postgres import Postgres
 
 SA_NAME = "maintcgdssa"
 SA_URL = f"https://{SA_NAME}.blob.core.windows.net"
@@ -39,8 +38,6 @@ def dkng_sgp_queue_scrape(timer: func.TimerRequest):
         pass
     sa_connection_string = f"DefaultEndpointsProtocol=https;AccountName={SA_NAME};AccountKey={sa_key};EndpointSuffix=core.windows.net"
     queue = QueueClient.from_connection_string(sa_connection_string, "prod2queue")
-    encoder = TextBase64EncodePolicy()
-
     dkng_pg = Postgres(psql_username, psql_password, 'dkng')
     dkng_event_data = dkng_get_events(sport_groups_keys['NFL Football']['eventGroupId'])
     now_plus_24 = datetime.utcnow() + relativedelta(hours=24) 
@@ -54,6 +51,7 @@ def dkng_sgp_queue_scrape(timer: func.TimerRequest):
             dkng_event_ids = dkng_event_time_groups.get_group(event_time)['eventId'].to_list()
             msg_dict = {'func':'dkng', 'event_ids':dkng_event_ids}
             dkng_timeout = (event_time-datetime.utcnow()).seconds-420
+            encoder = TextBase64EncodePolicy()
             queue.send_message(encoder.encode(json.dumps(msg_dict)), visibility_timeout=dkng_timeout)  
 
 
@@ -61,8 +59,6 @@ def dkng_sgp_queue_scrape(timer: func.TimerRequest):
 def fanduel_sgp_queue_scrape(timer:func.TimerRequest):
     sa_connection_string = f"DefaultEndpointsProtocol=https;AccountName={SA_NAME};AccountKey={sa_key};EndpointSuffix=core.windows.net"
     queue = QueueClient.from_connection_string(sa_connection_string, "prod2queue")
-    encoder = TextBase64EncodePolicy()
-
     fanduel_pg = Postgres(psql_username, psql_password, 'fanduel')
     event_data = fanduel_get_events()
     now_plus_24 = datetime.utcnow() + relativedelta(hours=24)
@@ -76,6 +72,7 @@ def fanduel_sgp_queue_scrape(timer:func.TimerRequest):
             fd_evnet_ids = event_time_groups.get_group(event_time)['eventId'].to_list()
             msg_dict = {'func':'fanduel', 'event_ids':fd_evnet_ids}
             fanduel_timeout = (event_time-datetime.utcnow()).seconds-180
+            encoder = TextBase64EncodePolicy()
             queue.send_message(encoder.encode(json.dumps(msg_dict)), visibility_timeout=fanduel_timeout)
 
 
