@@ -4,7 +4,7 @@ import azure.functions as func
 # other imports
 import requests
 
-
+# define functionapp
 app = func.FunctionApp()
 
 
