@@ -35,8 +35,8 @@ os.environ['psql_password'] = psql_password
 app = func.FunctionApp()
 
 
-
-@app.route("scrape/chtr/zip_codes")
+# zip code scrape
+@app.route("scrapes/chtr/zip_codes")
 def chtr_zip_code_check(req:func.TimerRequest):
     pg_engine = create_engine(psql_connection.format(user=psql_username, password=psql_password)) 
     zip_codes = pd.read_sql_table('zip_codes', pg_engine, schema='chtr')
@@ -47,7 +47,8 @@ def chtr_zip_code_check(req:func.TimerRequest):
         PandasPGHelper().to_sql(data_df, 'zip_code_data', 'chtr') 
 
 
-@app.route("scrape/chtr/rando_addresses")
+# random address scrape
+@app.route("scrapes/chtr/rando_addresses")
 async def chtr_rando_addresses(req:func.TimerRequest):
     throttle = 5 
     allowed_consecutive_400s = 20
