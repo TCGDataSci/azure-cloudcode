@@ -83,4 +83,10 @@ def chtr_zipcode_scrape(timer:func.TimerRequest):
     response = requests.get("https://linux-python-chtr.azurewebsites.net/api/scrapes/chtr/zip_codes")
     return response
 
-
+# five below product scrape
+@app.timer_trigger('timer', '0 0 9 * * 0', run_on_startup=False)
+def five_product_scrape(timer:func.TimerRequest):
+    if timer.past_due:
+        pass
+    response = requests.get("https://linux-python-five-products.azurewebsites.net/api/scrapes/five/products")
+    return response
