@@ -1,6 +1,5 @@
 # azure imports 
 import azure.functions as func
-import azure.durable_functions as df  
 from azure.identity import EnvironmentCredential
 from azure.keyvault.secrets import SecretClient
 from azure.storage.blob import BlobServiceClient
@@ -90,17 +89,12 @@ SA_NAME = "maintcgdssa"
 SA_URL = f"https://{SA_NAME}.blob.core.windows.net"
 SA_KEY_NAME = f'{SA_NAME}Key'
 
-# initializing via key vault and environment variables
-KVUrl = "https://tcgdsvault.vault.azure.net/"
-credential = EnvironmentCredential()
-client = SecretClient(vault_url=KVUrl, credential=credential)
 
-
-whale_shared_key = client.get_secret('WhaleWisdomSharedKey').value
-whale_secret_key = client.get_secret('WhaleWisdomSecretKey').value
-psql_username = client.get_secret('PSQLUsername').value
-psql_password = client.get_secret('PSQLPassword').value
-sa_key = client.get_secret(SA_KEY_NAME).value
+whale_shared_key = secret_client.get_secret('WhaleWisdomSharedKey').value
+whale_secret_key = secret_client.get_secret('WhaleWisdomSecretKey').value
+psql_username = secret_client.get_secret('PSQLUsername').value
+psql_password = secret_client.get_secret('PSQLPassword').value
+sa_key = secret_client.get_secret(SA_KEY_NAME).value
 blob_service_client = BlobServiceClient(SA_URL, credential=sa_key)
 pg = Postgres(psql_username, psql_password, 'test')
 whale = Whalewisdom(whale_shared_key, whale_secret_key, blob_service_client, pg)
