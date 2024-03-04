@@ -89,4 +89,4 @@ def five_product_scrape(timer:func.TimerRequest):
     if timer.past_due:
         pass
     response = requests.get("https://linux-python-five-products.azurewebsites.net/api/scrapes/five/products")
-    return response
+    return response 
