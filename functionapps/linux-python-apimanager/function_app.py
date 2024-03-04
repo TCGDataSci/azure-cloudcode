@@ -30,6 +30,7 @@ os.environ['psql_password'] = secret_client.get_secret('PSQLPassword').value
 app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
 
+# sensortower data update
 @app.route("apis/sensortower/update")
 async def sensortower_update(req:func.HttpRequest):
     update_freqs = ['daily']
@@ -84,27 +85,17 @@ async def similarweb_update(req:func.HttpRequest):
         await asyncio.gather(*all_update_tasks) 
 
 
-
-SA_NAME = "maintcgdssa"
-SA_URL = f"https://{SA_NAME}.blob.core.windows.net"
-SA_KEY_NAME = f'{SA_NAME}Key'
-
-
-whale_shared_key = secret_client.get_secret('WhaleWisdomSharedKey').value
-whale_secret_key = secret_client.get_secret('WhaleWisdomSecretKey').value
-psql_username = secret_client.get_secret('PSQLUsername').value
-psql_password = secret_client.get_secret('PSQLPassword').value
-sa_key = secret_client.get_secret(SA_KEY_NAME).value
-blob_service_client = BlobServiceClient(SA_URL, credential=sa_key)
-pg = Postgres(psql_username, psql_password, 'test')
-whale = Whalewisdom(whale_shared_key, whale_secret_key, blob_service_client, pg)
-
-
-
+# whalewisdom holdings update
 @app.route("apis/whalewisdom/13fUpdate")
 def whalewisdom_13fupdate(req:func.HttpRequest):
+    whale_shared_key = secret_client.get_secret('WhaleWisdomSharedKey').value
+    whale_secret_key = secret_client.get_secret('WhaleWisdomSecretKey').value
+    sa_key = secret_client.get_secret("maintcgdssaKey").value
+    blob_service_client = BlobServiceClient("https://maintcgdssa.blob.core.windows.net", credential=sa_key)
+    pg = Postgres(os.environ['psql_username'], os.environ['psql_password'], 'test')
+    whale = Whalewisdom(whale_shared_key, whale_secret_key, blob_service_client, pg)
     whale.update_holdings()
 
-@app.route("apis/whalewisdom/filerUpdate")
-def whalewisdom_updatefilers(req:func.HttpRequest):
-    whale.update_filers()
+# @app.route("apis/whalewisdom/filerUpdate")
+# def whalewisdom_updatefilers(req:func.HttpRequest):
+#     whale.update_filers()
