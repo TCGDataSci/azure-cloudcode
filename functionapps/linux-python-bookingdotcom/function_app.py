@@ -19,8 +19,9 @@ import requests.exceptions
 from datetime import datetime, timedelta
 
 # tcgds imports
-from tcgds.scrape import base_headers, TooManyConsecutiveSkips, TooManyTotalSkips, RetryException, custom_format_response, SCRAPE_DATA_CONTAINER, SCRAPE_ERROR_CONTAINER, PARSE_ERROR_CONTAINER, PARSE_DATA_CONTAINER
+from tcgds.scrape import base_headers, TooManyConsecutiveSkips, TooManyTotalSkips, RetryException, custom_format_response, SCRAPE_DATA_CONTAINER, SCRAPE_ERROR_CONTAINER, PARSE_ERROR_CONTAINER
 from tcgds.utils import to_snake, search_list_soup, string_replacements
+from tcgds.postgres import PandasPGHelper
 
 
 # authenticating with azure
@@ -43,12 +44,15 @@ async def bookingdotcom_ushotel_scrape(req:func.HttpRequest):
     scrape_guid = uuid.uuid4().hex
     scrape_name = "us_hotel_scrape" # for saving responses
     domain_name = "booking.com" # for saving responses
+    blob_path_prefix = f'{domain_name}/{scrape_name}/{scrape_guid}/' # for saving blob files
+    
+    # postgres variables
     pg_table = "us_hotels" # for parsing
     pg_schema = "bookingdotcom" # for parsing
-    throttle = 8 # for throttling requests
-    blob_path_prefix = f'{domain_name}/{scrape_name}/{scrape_guid}/'
+    pdpg_helper = PandasPGHelper(user=psql_username, password=psql_password)
 
     # initialize requests session
+    throttle = 8
     total_retries = 2 
     backoff_factor = 2
     status_forcelist = [400, 401, 404, 500]
@@ -56,6 +60,7 @@ async def bookingdotcom_ushotel_scrape(req:func.HttpRequest):
     r = requests.adapters.Retry(total=total_retries, backoff_factor=backoff_factor, status_forcelist=status_forcelist)
     s.mount('https://', requests.adapters.HTTPAdapter(max_retries=r)) 
     s.headers = base_headers
+
 
     # scrape
     state = dict()
@@ -72,6 +77,14 @@ async def bookingdotcom_ushotel_scrape(req:func.HttpRequest):
                     blob_client.upload_blob(json.dumps(custom_response))
 
                     # parse
+                    try:
+                        response_obj = custom_response['response']
+                        soup = BeautifulSoup(response_obj)
+                        extracted_data = get_hotel_page_data(soup)
+                        pdpg_helper.to_sql(extracted_data, pg_table, pg_schema)
+                    except Exception as e:
+                        blob_client = blob_service_client.get_blob_client(PARSE_ERROR_CONTAINER, blob_name)
+                        blob_client.upload_blob(json.dumps(custom_response))
 
                 elif status_code>=400 and status_code<500:
                     blob_client = blob_service_client.get_blob_client(SCRAPE_ERROR_CONTAINER, blob_name)
