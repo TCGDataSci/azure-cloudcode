@@ -55,6 +55,12 @@ def avdx_sales_schedule_scrape(timer:func.TimerRequest):
     response = requests.get("https://linux-python-small-scrapes.azurewebsites.net/api/scrapes/avdx/salesSchedule") 
     return response
 
+@app.timer_trigger('timer', '0 0 9 * * 0', run_on_startup=False)
+def five_location_scrape(timer:func.TimerRequest):
+    if timer.past_due:
+        pass
+    response = requests.get("https://linux-python-small-scrapes.azurewebsites.net/api/scrapes/five/locations")
+    return response 
 
 
 ### LARGE SCRAPES ###
