@@ -110,7 +110,7 @@ def dks_location_scrape(timer:func.TimerRequest):
 
 # dks product scrape ON
 @app.timer_trigger('timer', '0 0 9 1 * *', run_on_startup=False)
-def dks_location_scrape(timer:func.TimerRequest):
+def dks_on_product_scrape(timer:func.TimerRequest):
     if timer.past_due:
         pass
     req_body = {'search_term':'on'}
@@ -119,8 +119,8 @@ def dks_location_scrape(timer:func.TimerRequest):
 
 
 # dks product scrape HOKA
-@app.timer_trigger('timer', '0 0 9 1 * *', run_on_startup=False)
-def dks_location_scrape(timer:func.TimerRequest):
+@app.timer_trigger('timer', '0 0 11 1 * *', run_on_startup=False)
+def dks_hoka_product_scrape(timer:func.TimerRequest):
     if timer.past_due:
         pass
     req_body = {'search_term':'hoka'}
