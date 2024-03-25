@@ -2,6 +2,7 @@
 import azure.functions as func
 
 # other imports
+import json
 import requests
 
 # define functionapp
@@ -94,5 +95,34 @@ def chtr_zipcode_scrape(timer:func.TimerRequest):
 def five_product_scrape(timer:func.TimerRequest):
     if timer.past_due:
         pass
-    response = requests.get("https://linux-python-five-products.azurewebsites.net/api/scrapes/five/products")
+    response = requests.get("https://linux-python-five.azurewebsites.net/api/scrapes/five/products")
+    return response 
+
+
+# dks location scrape
+@app.timer_trigger('timer', '0 0 9 1 * *', run_on_startup=False)
+def dks_location_scrape(timer:func.TimerRequest):
+    if timer.past_due:
+        pass
+    response = requests.get("https://linux-python-dks.azurewebsites.net/api/scrapes/dks/locations")
+    return response 
+
+
+# dks product scrape ON
+@app.timer_trigger('timer', '0 0 9 1 * *', run_on_startup=False)
+def dks_location_scrape(timer:func.TimerRequest):
+    if timer.past_due:
+        pass
+    req_body = {'search_term':'on'}
+    response = requests.get("https://linux-python-dks.azurewebsites.net/api/scrapes/dks/products", json=json.dumps(req_body))
+    return response 
+
+
+# dks product scrape HOKA
+@app.timer_trigger('timer', '0 0 9 1 * *', run_on_startup=False)
+def dks_location_scrape(timer:func.TimerRequest):
+    if timer.past_due:
+        pass
+    req_body = {'search_term':'hoka'}
+    response = requests.get("https://linux-python-dks.azurewebsites.net/api/scrapes/dks/products", json=json.dumps(req_body))
     return response 
