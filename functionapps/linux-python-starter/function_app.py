@@ -66,28 +66,28 @@ def five_location_scrape(timer:func.TimerRequest):
 ### LARGE SCRAPES ###
 
 # booking.com scrape
-# @app.timer_trigger('timer', '0 0 8 1 * *', run_on_startup=False)
-# def bookingdotcom_ushotels_scrape(timer:func.TimerRequest):
-#     if timer.past_due:
-#         pass
-#     response = requests.get("https://linux-python-bookingdotcom.azurewebsites.net/api/scrapes/bookingdotcom/ushotels")
-#     return response
+@app.timer_trigger('timer', '0 0 8 1 * *', run_on_startup=False)
+def bookingdotcom_ushotels_scrape(timer:func.TimerRequest):
+    if timer.past_due:
+        pass
+    response = requests.get("https://linux-python-bookingdotcom.azurewebsites.net/api/scrapes/bookingdotcom/ushotels")
+    return response
 
-# # charter random address scrape
-# @app.timer_trigger('timer', '0 0 9 1 * *', run_on_startup=False)
-# def chtr_address_scrape(timer:func.TimerRequest):
-#     if timer.past_due:
-#         pass
-#     response = requests.get("https://linux-python-chtr.azurewebsites.net/api/scrapes/chtr/rando_addresses")
-#     return response
+# charter random address scrape
+@app.timer_trigger('timer', '0 0 9 1 * *', run_on_startup=False)
+def chtr_address_scrape(timer:func.TimerRequest):
+    if timer.past_due:
+        pass
+    response = requests.get("https://linux-python-chtr.azurewebsites.net/api/scrapes/chtr/rando_addresses")
+    return response
 
-# # charter zip code scrape
-# @app.timer_trigger('timer', '0 0 9 15 * *', run_on_startup=False)
-# def chtr_zipcode_scrape(timer:func.TimerRequest):
-#     if timer.past_due:
-#         pass
-#     response = requests.get("https://linux-python-chtr.azurewebsites.net/api/scrapes/chtr/zip_codes")
-#     return response
+# charter zip code scrape
+@app.timer_trigger('timer', '0 0 9 15 * *', run_on_startup=False)
+def chtr_zipcode_scrape(timer:func.TimerRequest):
+    if timer.past_due:
+        pass
+    response = requests.get("https://linux-python-chtr.azurewebsites.net/api/scrapes/chtr/zip_codes")
+    return response
 
 # five below product scrape
 @app.timer_trigger('timer', '0 0 9 * * 0', run_on_startup=False)
