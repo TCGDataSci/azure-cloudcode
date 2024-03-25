@@ -11,7 +11,7 @@ from tcgds.postgres import PandasPGHelper
 from tcgds.reporting import send_report
 
 # other imports
-
+import os
 import json
 import uuid
 import time
@@ -28,8 +28,8 @@ credential = EnvironmentCredential()
 secret_client = SecretClient(vault_url=KVUrl, credential=credential)
   
 # psql constants     
-psql_username = secret_client.get_secret('PSQLUsername').value  
-psql_password = secret_client.get_secret('PSQLPassword').value
+os.environ['psql_username'] = psql_username = secret_client.get_secret('PSQLUsername').value  
+os.environ['psql_password'] = psql_password = secret_client.get_secret('PSQLPassword').value
 storage_connection_string = secret_client.get_secret('maintcgdssaConnectionString')
 
 
@@ -76,7 +76,7 @@ def five_product_scrape(req:func.HttpRequest):
 #             yield state.pop(0)
 
 
-#     # scrape
+#     # scrape'
 #     state = dict()
 #     for url in url_generator(state):
 #         time.sleep(throttle)

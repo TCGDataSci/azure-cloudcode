@@ -9,6 +9,7 @@ from tcgds.scrapes.dks import *
 from tcgds.postgres import PandasPGHelper
 
 # other imports 
+import os
 import uuid
 from datetime import datetime
 
@@ -17,11 +18,22 @@ credential = EnvironmentCredential()
 secret_client = SecretClient(vault_url=KVUrl, credential=credential)
   
 # psql constants     
-psql_username = secret_client.get_secret('PSQLUsername').value  
-psql_password = secret_client.get_secret('PSQLPassword').value
+os.environ['psql_username'] = psql_username = secret_client.get_secret('PSQLUsername').value  
+os.environ['psql_password'] = psql_password = secret_client.get_secret('PSQLPassword').value
 storage_connection_string = secret_client.get_secret('maintcgdssaConnectionString')
 
 app = func.FunctionApp()
+
+
+
+@app.rout("scrapes/dks/locations")
+def dks_location_scrape(req:func.HttpRequest):
+    scrape_guid = uuid.uuid4()
+    location_df = get_dks_locations_sitemap()
+    location_df['scrape_guid'] = [scrape_guid]*len(location_df)
+    pg_helper = PandasPGHelper(user=psql_username, password=psql_password)
+    pg_helper.to_sql(location_df, 'store_locations', 'dks')
+
 
 
 @app.route("scrapes/dks/products")
@@ -40,13 +52,11 @@ def dks_product_scrape(req:func.HttpRequest):
     skus_inventory_df['observed_date'] = [date_today]*len(skus_inventory_df)
     skus_attributes_df['observed_date'] = [date_today]*len(skus_attributes_df)
     
-    location_df['scrape_guid'] = [scrape_guid]*len(location_df)
     product_search_results['scrape_guid'] = [scrape_guid]*len(product_search_results)
     skus_meta_df['scrape_guid'] = [scrape_guid]*len(skus_meta_df)
     skus_inventory_df['scrape_guid'] = [scrape_guid]*len(skus_inventory_df)
     skus_attributes_df['scrape_guid'] = [scrape_guid]*len(skus_attributes_df)
     
-    pg_helper.to_sql(location_df, 'store_locations', 'dks')
     pg_helper.to_sql(product_search_results, 'product_data', 'dks')
     pg_helper.to_sql(skus_meta_df, 'skus_meta_data', 'dks')
     pg_helper.to_sql(skus_attributes_df, 'skus_attributes_data', 'dks')
