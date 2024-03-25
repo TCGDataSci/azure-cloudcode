@@ -44,8 +44,8 @@ app = func.FunctionApp()
 ### dutch bros location scrape ###
 @app.route("scrapes/bros/locations")
 def bros_location_scrape(req:func.HttpRequest):
-    blob_container = 'scrape-data-container'
-    blob_storage_path = 'dutchbros.com/locations_scrape/'
+    # blob_container = 'scrape-data-container'
+    # blob_storage_path = 'dutchbros.com/locations_scrape/'
     try:
         # presets for scraping
         loc_url = "https://files.dutchbros.com/api-cache/stands.json"
@@ -53,10 +53,10 @@ def bros_location_scrape(req:func.HttpRequest):
         headers['accept-encoding'] = ''
         # make get request to json file
         response = requests.get(loc_url, headers=headers)
-        blob_name = uuid.uuid3(uuid.NAMESPACE_URL, loc_url).hex + str(datetime.now().timestamp()).replace(".", "") + '.txt' 
-        with BlobServiceClient.from_connection_string(os.environ['SA_CONNECTION_STG']) as blob_service_client:
-            blob_client = blob_service_client.get_blob_client(blob_container, blob_storage_path + blob_name)
-            blob_client.upload_blob(response.text)
+        # blob_name = uuid.uuid3(uuid.NAMESPACE_URL, loc_url).hex + str(datetime.now().timestamp()).replace(".", "") + '.txt' 
+        # with BlobServiceClient.from_connection_string(os.environ['SA_CONNECTION_STRING']) as blob_service_client:
+        #     blob_client = blob_service_client.get_blob_client(blob_container, blob_storage_path + blob_name)
+        #     blob_client.upload_blob(response.text)
         json_obj = json.loads(response.text)        
 
         # to postgres
