@@ -28,7 +28,7 @@ os.environ['psql_password'] = secret_client.get_secret('PSQLPassword').value
 
 # initialize function app
 app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
-
+ 
 
 # sensortower data update
 @app.route("apis/sensortower/update")
