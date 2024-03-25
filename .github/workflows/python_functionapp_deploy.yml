@@ -19,6 +19,8 @@ on:
         type: string 
 env:
   package_path: './functionapps/${{inputs.function_name}}/'
+  GIT_MACHINE_TOKEN: ${{secrets.GIT_MACHINE_TOKEN}}
+  GIT_MACHINE_USER: ${{secrets.GIT_MACHINE_USER}}
     
     
 jobs:
