@@ -38,6 +38,9 @@ def whalewisdom_update(timer:func.TimerRequest):
 
 
 
+
+
+
 ### SMALL SCRAPES ###
 
 # dutchbros location scrape
@@ -56,12 +59,17 @@ def avdx_sales_schedule_scrape(timer:func.TimerRequest):
     response = requests.get("https://linux-python-small-scrapes.azurewebsites.net/api/scrapes/avdx/salesSchedule") 
     return response
 
+# five below locaton scrape
 @app.timer_trigger('timer', '0 0 9 * * 0', run_on_startup=False)
 def five_location_scrape(timer:func.TimerRequest):
     if timer.past_due:
         pass
     response = requests.get("https://linux-python-small-scrapes.azurewebsites.net/api/scrapes/five/locations")
     return response 
+
+
+
+
 
 
 ### LARGE SCRAPES ###
@@ -98,7 +106,6 @@ def five_product_scrape(timer:func.TimerRequest):
     response = requests.get("https://linux-python-five.azurewebsites.net/api/scrapes/five/products")
     return response 
 
-
 # dks location scrape
 @app.timer_trigger('timer', '0 0 9 1 * *', run_on_startup=False)
 def dks_location_scrape(timer:func.TimerRequest):
@@ -106,7 +113,6 @@ def dks_location_scrape(timer:func.TimerRequest):
         pass
     response = requests.get("https://linux-python-dks.azurewebsites.net/api/scrapes/dks/locations")
     return response 
-
 
 # dks product scrape ON
 @app.timer_trigger('timer', '0 0 9 1 * *', run_on_startup=False)
@@ -116,7 +122,6 @@ def dks_on_product_scrape(timer:func.TimerRequest):
     req_body = {'search_term':'on'}
     response = requests.post("https://linux-python-dks.azurewebsites.net/api/scrapes/dks/products", json=req_body)
     return response 
-
 
 # dks product scrape HOKA
 @app.timer_trigger('timer', '0 0 11 1 * *', run_on_startup=False)
