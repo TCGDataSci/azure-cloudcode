@@ -67,6 +67,13 @@ def five_location_scrape(timer:func.TimerRequest):
     response = requests.get("https://linux-python-small-scrapes.azurewebsites.net/api/scrapes/five/locations")
     return response 
 
+# fdic isider filing scrape
+@app.timer_trigger('timer', '0 0 0 * * *', run_on_startup=False)
+def fdic_insider_filing_scrape(timer:func.TimerRequest):
+    if timer.past_due:
+        pass
+    response = requests.get("https://linux-python-small-scrapes.azurewebsites.net/api/scrapes/fdic/insiderFilings")
+    return response
 
 
 
