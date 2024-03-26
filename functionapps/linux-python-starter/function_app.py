@@ -114,7 +114,7 @@ def dks_on_product_scrape(timer:func.TimerRequest):
     if timer.past_due:
         pass
     req_body = {'search_term':'on'}
-    response = requests.get("https://linux-python-dks.azurewebsites.net/api/scrapes/dks/products", json=json.dumps(req_body))
+    response = requests.post("https://linux-python-dks.azurewebsites.net/api/scrapes/dks/products", json=req_body)
     return response 
 
 
@@ -124,5 +124,5 @@ def dks_hoka_product_scrape(timer:func.TimerRequest):
     if timer.past_due:
         pass
     req_body = {'search_term':'hoka'}
-    response = requests.get("https://linux-python-dks.azurewebsites.net/api/scrapes/dks/products", json=json.dumps(req_body))
+    response = requests.post("https://linux-python-dks.azurewebsites.net/api/scrapes/dks/products", json=req_body)
     return response 
