@@ -29,7 +29,7 @@ def similarweb_update(timer:func.TimerRequest):
     return response
 
 # whalewisdom update
-@app.timer_triger('timer', '0 0 12,14,16,18,20 13-21 2,5,8,11 *' , run_on_startup=False)
+@app.timer_trigger('timer', '0 0 12,14,16,18,20 13-21 2,5,8,11 *' , run_on_startup=False)
 def whalewisdom_update(timer:func.TimerRequest):
     if timer.past_due:
         pass
