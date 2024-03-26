@@ -105,3 +105,11 @@ def avdx_sales_schedule_scrape(req:func.HttpRequest):
     with pg:
         pg.to_sql(data_df, 'sales_rep_schedule', 'added')
 
+
+
+### fdic insider filing scrape
+from tcgds.scrapes.fdic import FDIC
+@app.route('scrapes/fdic/insiderFilings')
+def fdic_insider_filings_scrape(req:func.HttpRequest):
+    fdick = FDIC(psql_username, psql_password)
+    fdick.scrape_new_disclosures()
