@@ -31,7 +31,7 @@ app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
  
 
 # sensortower data update
-@app.route("apis/sensortower/update")
+@app.route(route="apis/sensortower/update", auth_level=func.AuthLevel.ANONYMOUS)
 async def sensortower_update(req:func.HttpRequest):
     update_freqs = ['daily']
     if (tday:=datetime.today()).weekday()==0:
@@ -62,7 +62,7 @@ async def sensortower_update(req:func.HttpRequest):
  
 
 # similarweb data update function
-@app.route("apis/similarweb/update")
+@app.route(route="apis/similarweb/update", auth_level=func.AuthLevel.ANONYMOUS)
 async def similarweb_update(req:func.HttpRequest):
     update_freqs = ['daily','monthly']
     if (tday:=datetime.today()).weekday()==0: 
@@ -86,7 +86,7 @@ async def similarweb_update(req:func.HttpRequest):
 
 
 # whalewisdom holdings update
-@app.route("apis/whalewisdom/13fUpdate")
+@app.route(route="apis/whalewisdom/13fUpdate", auth_level=func.AuthLevel.ANONYMOUS)
 def whalewisdom_13fupdate(req:func.HttpRequest):
     whale_shared_key = secret_client.get_secret('WhaleWisdomSharedKey').value
     whale_secret_key = secret_client.get_secret('WhaleWisdomSecretKey').value

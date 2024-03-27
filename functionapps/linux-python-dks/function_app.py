@@ -29,7 +29,7 @@ app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
 
 
-@app.route("scrapes/dks/locations")
+@app.route(route="scrapes/dks/locations", auth_level=func.AuthLevel.ANONYMOUS)
 def dks_location_scrape(req:func.HttpRequest):
     scrape_guid = uuid.uuid4()
     date_today = datetime.today()
@@ -41,7 +41,7 @@ def dks_location_scrape(req:func.HttpRequest):
 
 
 
-@app.route("scrapes/dks/products")
+@app.route(route="scrapes/dks/products", auth_level=func.AuthLevel.ANONYMOUS)
 def dks_product_scrape(req:func.HttpRequest):
     # get search term from request body
     req_obj = json.load(req.get_body())

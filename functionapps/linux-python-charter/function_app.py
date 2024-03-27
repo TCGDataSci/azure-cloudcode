@@ -16,7 +16,7 @@ from sqlalchemy import create_engine, text
 # tcgds imports
 from tcgds.postgres import PandasPGHelper, psql_connection
 from tcgds.scrapes.chtr import *
-from tcgds.scrape import json_format_response, blob_upload
+from tcgds.scrape import custom_format_response, blob_upload
 from tcgds.reporting import send_report
 
 
@@ -36,7 +36,7 @@ app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
 
 # zip code scrape
-@app.route("scrapes/chtr/zip_codes")
+@app.route(route="scrapes/chtr/zip_codes", auth_level=func.AuthLevel.ANONYMOUS)
 def chtr_zip_code_check(req:func.TimerRequest):
     pg_engine = create_engine(psql_connection.format(user=psql_username, password=psql_password)) 
     zip_codes = pd.read_sql_table('zip_codes', pg_engine, schema='chtr')
@@ -48,7 +48,7 @@ def chtr_zip_code_check(req:func.TimerRequest):
 
 
 # random address scrape
-@app.route("scrapes/chtr/rando_addresses")
+@app.route(route="scrapes/chtr/rando_addresses", auth_level=func.AuthLevel.ANONYMOUS)
 async def chtr_rando_addresses(req:func.TimerRequest):
     throttle = 5 
     allowed_consecutive_400s = 20
@@ -68,7 +68,7 @@ async def chtr_rando_addresses(req:func.TimerRequest):
                     response = check_address(address, timeout=30)
                 except TypeError:
                     continue
-                json_response = json_format_response(response, scrape_guid=scrape_guid)
+                json_response = custom_format_response(response, scrape_guid=scrape_guid)
                 address_str = ''
                 for elt in address[:-1]:
                     if elt is not None:

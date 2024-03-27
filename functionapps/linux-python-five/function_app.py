@@ -35,7 +35,7 @@ storage_connection_string = secret_client.get_secret('maintcgdssaConnectionStrin
 
 app = func.FunctionApp()
 
-@app.route("scrapes/five/products", auth_level=func.AuthLevel.ANONYMOUS)
+@app.route(route="scrapes/five/products", auth_level=func.AuthLevel.ANONYMOUS)
 def five_product_scrape(req:func.HttpRequest):
     scrape_all_categories(progress=False)
 

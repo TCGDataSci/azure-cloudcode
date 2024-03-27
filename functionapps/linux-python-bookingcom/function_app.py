@@ -38,7 +38,7 @@ storage_connection_string = secret_client.get_secret('maintcgdssaConnectionStrin
 # initialize functionapp
 app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
-@app.route("scrapes/bookingdotcom/ushotels")
+@app.route(route="scrapes/bookingdotcom/ushotels", auth_level=func.AuthLevel.ANONYMOUS)
 async def bookingdotcom_ushotel_scrape(req:func.HttpRequest):
     # scrape variables
     scrape_guid = uuid.uuid4().hex
