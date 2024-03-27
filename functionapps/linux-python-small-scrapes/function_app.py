@@ -42,7 +42,7 @@ app = func.FunctionApp()
 
 
 ### dutch bros location scrape ###
-@app.route("scrapes/bros/locations", auth_level=func.AuthLevel.ANONYMOUS)
+@app.route(route="scrapes/bros/locations", auth_level=func.AuthLevel.ANONYMOUS)
 def bros_location_scrape(req:func.HttpRequest):
     # blob_container = 'scrape-data-container'
     # blob_storage_path = 'dutchbros.com/locations_scrape/'
@@ -109,7 +109,7 @@ def avdx_sales_schedule_scrape(req:func.HttpRequest):
 
 ### fdic insider filing scrape
 from tcgds.scrapes.fdic import FDIC
-@app.route('scrapes/fdic/insiderFilings')
+@app.route(route='scrapes/fdic/insiderFilings', auth_level=func.AuthLevel.ANONYMOUS)
 def fdic_insider_filings_scrape(req:func.HttpRequest):
     fdick = FDIC(psql_username, psql_password)
     fdick.scrape_new_disclosures()

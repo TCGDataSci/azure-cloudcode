@@ -17,7 +17,7 @@ app = func.FunctionApp()
 def sensortower_update(timer:func.TimerRequest):
     if timer.past_due:
         pass
-    response = requests.get("https://linux-python-apimanager.azurewebsites.net/api/apis/sensortower/update")
+    response = requests.get("https://linux-python-apimanager-tcgdatasci.azurewebsites.net/api/apis/sensortower/update")
     return response
 
 # similarweb update
@@ -25,7 +25,7 @@ def sensortower_update(timer:func.TimerRequest):
 def similarweb_update(timer:func.TimerRequest):
     if timer.past_due:
         pass
-    response = requests.get("https://linux-python-apimanager.azurewebsites.net/api/apis/similarweb/update")
+    response = requests.get("https://linux-python-apimanager-tcgdatasci.azurewebsites.net/api/apis/similarweb/update")
     return response
 
 # whalewisdom update
@@ -33,7 +33,7 @@ def similarweb_update(timer:func.TimerRequest):
 def whalewisdom_update(timer:func.TimerRequest):
     if timer.past_due:
         pass
-    response = requests.get("https://linux-python-apimanager.azurewebsites.net/api/apis/whalewisdom/13fupdate")
+    response = requests.get("https://linux-python-apimanager-tcgdatasci.azurewebsites.net/api/apis/whalewisdom/13fupdate")
     return response
 
 
@@ -48,15 +48,15 @@ def whalewisdom_update(timer:func.TimerRequest):
 def dutchbros_location_scrape(timer:func.TimerRequest):
     if timer.past_due:
         pass
-    response = requests.get("https://linux-python-small-scrapes.azurewebsites.net/api/scrapes/bros/locations")
+    response = requests.get("https://linux-python-small-scrapes-tcgdatasci.azurewebsites.net/api/scrapes/bros/locations")
     return response
 
 # avdx sales person schedule scrape
-@app.timer_trigger('timer', "0 0 8 * * 1-5", run_on_startup=True)
+@app.timer_trigger('timer', "0 0 8 * * 1-5", run_on_startup=False)
 def avdx_sales_schedule_scrape(timer:func.TimerRequest):
     if timer.past_due:
         pass
-    response = requests.get("https://linux-python-small-scrapes.azurewebsites.net/api/scrapes/avdx/salesSchedule") 
+    response = requests.get("https://linux-python-small-scrapes-tcgdatasci.azurewebsites.net/api/scrapes/avdx/salesSchedule") 
     return response
 
 # five below locaton scrape
@@ -64,7 +64,7 @@ def avdx_sales_schedule_scrape(timer:func.TimerRequest):
 def five_location_scrape(timer:func.TimerRequest):
     if timer.past_due:
         pass
-    response = requests.get("https://linux-python-small-scrapes.azurewebsites.net/api/scrapes/five/locations")
+    response = requests.get("https://linux-python-small-scrapes-tcgdatasci.azurewebsites.net/api/scrapes/five/locations")
     return response 
 
 # fdic isider filing scrape
@@ -72,7 +72,7 @@ def five_location_scrape(timer:func.TimerRequest):
 def fdic_insider_filing_scrape(timer:func.TimerRequest):
     if timer.past_due:
         pass
-    response = requests.get("https://linux-python-small-scrapes.azurewebsites.net/api/scrapes/fdic/insiderFilings")
+    response = requests.get("https://linux-python-small-scrapes-tcgdatasci.azurewebsites.net/api/scrapes/fdic/insiderFilings")
     return response
 
 
@@ -86,7 +86,7 @@ def fdic_insider_filing_scrape(timer:func.TimerRequest):
 def bookingdotcom_ushotels_scrape(timer:func.TimerRequest):
     if timer.past_due:
         pass
-    response = requests.get("https://linux-python-bookingdotcom.azurewebsites.net/api/scrapes/bookingdotcom/ushotels")
+    response = requests.get("https://linux-python-bookingdotcom-tcgdatasci.azurewebsites.net/api/scrapes/bookingdotcom/ushotels")
     return response
 
 # charter random address scrape
@@ -94,7 +94,7 @@ def bookingdotcom_ushotels_scrape(timer:func.TimerRequest):
 def chtr_address_scrape(timer:func.TimerRequest):
     if timer.past_due:
         pass
-    response = requests.get("https://linux-python-chtr.azurewebsites.net/api/scrapes/chtr/rando_addresses")
+    response = requests.get("https://linux-python-chtr-tcgdatasci.azurewebsites.net/api/scrapes/chtr/rando_addresses")
     return response
 
 # charter zip code scrape
@@ -102,7 +102,7 @@ def chtr_address_scrape(timer:func.TimerRequest):
 def chtr_zipcode_scrape(timer:func.TimerRequest):
     if timer.past_due:
         pass
-    response = requests.get("https://linux-python-chtr.azurewebsites.net/api/scrapes/chtr/zip_codes")
+    response = requests.get("https://linux-python-chtr-tcgdatasci.azurewebsites.net/api/scrapes/chtr/zip_codes")
     return response
 
 # five below product scrape
@@ -110,7 +110,7 @@ def chtr_zipcode_scrape(timer:func.TimerRequest):
 def five_product_scrape(timer:func.TimerRequest):
     if timer.past_due:
         pass
-    response = requests.get("https://linux-python-five.azurewebsites.net/api/scrapes/five/products")
+    response = requests.get("https://linux-python-five-tcgdatasci.azurewebsites.net/api/scrapes/five/products")
     return response 
 
 # dks location scrape
@@ -118,7 +118,7 @@ def five_product_scrape(timer:func.TimerRequest):
 def dks_location_scrape(timer:func.TimerRequest):
     if timer.past_due:
         pass
-    response = requests.get("https://linux-python-dks.azurewebsites.net/api/scrapes/dks/locations")
+    response = requests.get("https://linux-python-dks-tcgdatasci.azurewebsites.net/api/scrapes/dks/locations")
     return response 
 
 # dks product scrape ON
@@ -127,7 +127,7 @@ def dks_on_product_scrape(timer:func.TimerRequest):
     if timer.past_due:
         pass
     req_body = {'search_term':'on'}
-    response = requests.post("https://linux-python-dks.azurewebsites.net/api/scrapes/dks/products", json=req_body)
+    response = requests.post("https://linux-python-dks-tcgdatasci.azurewebsites.net/api/scrapes/dks/products", json=req_body)
     return response 
 
 # dks product scrape HOKA
@@ -136,5 +136,5 @@ def dks_hoka_product_scrape(timer:func.TimerRequest):
     if timer.past_due:
         pass
     req_body = {'search_term':'hoka'}
-    response = requests.post("https://linux-python-dks.azurewebsites.net/api/scrapes/dks/products", json=req_body)
+    response = requests.post("https://linux-python-dks-tcgdatasci.azurewebsites.net/api/scrapes/dks/products", json=req_body)
     return response 
