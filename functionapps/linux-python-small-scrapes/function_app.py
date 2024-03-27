@@ -33,7 +33,7 @@ secret_client = SecretClient(vault_url=KVUrl, credential=credential)
 # psql constants     
 psql_username = secret_client.get_secret('PSQLUsername').value  
 psql_password = secret_client.get_secret('PSQLPassword').value
-storage_connection_string = secret_client.get_secret('maintcgdssaConnectionString')
+storage_connection_string = secret_client.get_secret('mainStorageAccount').value
 os.environ['psql_username'] = psql_username
 os.environ['psql_password'] = psql_password
 
