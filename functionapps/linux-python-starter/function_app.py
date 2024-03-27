@@ -52,7 +52,7 @@ def dutchbros_location_scrape(timer:func.TimerRequest):
     return response
 
 # avdx sales person schedule scrape
-@app.timer_trigger('timer', "0 0 8 * * 1-5", run_on_startup=False)
+@app.timer_trigger('timer', "0 0 8 * * 1-5", run_on_startup=True)
 def avdx_sales_schedule_scrape(timer:func.TimerRequest):
     if timer.past_due:
         pass
