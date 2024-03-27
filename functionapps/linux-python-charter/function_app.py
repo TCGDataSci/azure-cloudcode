@@ -32,7 +32,7 @@ os.environ['psql_username'] = psql_username
 os.environ['psql_password'] = psql_password
 
 
-app = func.FunctionApp()
+app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
 
 # zip code scrape

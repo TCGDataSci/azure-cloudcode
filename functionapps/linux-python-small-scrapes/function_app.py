@@ -42,7 +42,7 @@ app = func.FunctionApp()
 
 
 ### dutch bros location scrape ###
-@app.route("scrapes/bros/locations")
+@app.route("scrapes/bros/locations", auth_level=func.AuthLevel.ANONYMOUS)
 def bros_location_scrape(req:func.HttpRequest):
     # blob_container = 'scrape-data-container'
     # blob_storage_path = 'dutchbros.com/locations_scrape/'
@@ -75,7 +75,7 @@ def bros_location_scrape(req:func.HttpRequest):
 ### five below loaction scrapes ###
 from tcgds.scrapes.five import extract_location_data, location_url_generator
 
-@app.route("scrapes/five/locations")
+@app.route("scrapes/five/locations", auth_level=func.AuthLevel.ANONYMOUS)
 def five_location_scrape(req:func.HttpRequest):
     import time 
     extracted_data = []
@@ -95,7 +95,7 @@ def five_location_scrape(req:func.HttpRequest):
 
 
 ### avdx sales schedule scrape ### 
-@app.route("scrapes/avdx/salesSchedule")
+@app.route("scrapes/avdx/salesSchedule", auth_level=func.AuthLevel.ANONYMOUS)
 def avdx_sales_schedule_scrape(req:func.HttpRequest):
     sales_sched_data = avdxSalesScheduleScape()
     data_df = pd.DataFrame(sales_sched_data)

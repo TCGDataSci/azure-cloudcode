@@ -25,7 +25,7 @@ os.environ['psql_username'] = psql_username = secret_client.get_secret('PSQLUser
 os.environ['psql_password'] = psql_password = secret_client.get_secret('PSQLPassword').value
 
 # app initializtion
-app = func.FunctionApp()
+app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
 
 
