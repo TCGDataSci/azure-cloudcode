@@ -39,16 +39,19 @@ def dkng_sgp_queue_scrape(timer: func.TimerRequest):
     sa_connection_string = f"DefaultEndpointsProtocol=https;AccountName={SA_NAME};AccountKey={sa_key};EndpointSuffix=core.windows.net"
     queue = QueueClient.from_connection_string(sa_connection_string, "prod2queue")
     dkng_pg = Postgres(psql_username, psql_password, 'dkng')
-    dkng_event_data = dkng_get_events(sport_groups_keys['NFL Football']['eventGroupId'])
+    nba_event_data = dkng_get_events(sport_groups_keys['NBA']['eventGroupId'])
+    m_college_bball_event_data = dkng_get_events(sport_groups_keys['Men College Basketball']['eventGroupId'])
+    w_college_bball_event_data = dkng_get_events(sport_groups_keys['Women College Basketball']['eventGroupId'])
+    dkng_event_data = pd.concat([nba_event_data, m_college_bball_event_data, w_college_bball_event_data], ignore_index=True)
     now_plus_24 = datetime.utcnow() + relativedelta(hours=24) 
-    dkng_next_24hrs = dkng_event_data.loc[dkng_event_data['startDate'] <= now_plus_24].reset_index(drop=True)
+    dkng_next_24hrs = dkng_event_data.loc[dkng_event_data['start_date'] <= now_plus_24].reset_index(drop=True)
     if not dkng_next_24hrs.empty:
         with dkng_pg:
-            dkng_pg.to_sql(dkng_next_24hrs, 'dkng_events_meta', 'added')
-        dkng_event_time_groups = dkng_next_24hrs.groupby('startDate')
+            dkng_pg.to_sql(dkng_next_24hrs, 'events_meta', 'added')
+        dkng_event_time_groups = dkng_next_24hrs.groupby('start_date')
         dkng_event_times = dkng_event_time_groups.groups.keys()
         for event_time in dkng_event_times:
-            dkng_event_ids = dkng_event_time_groups.get_group(event_time)['eventId'].to_list()
+            dkng_event_ids = dkng_event_time_groups.get_group(event_time)['event_id'].to_list()
             msg_dict = {'func':'dkng', 'event_ids':dkng_event_ids}
             dkng_timeout = (event_time-datetime.utcnow()).seconds-420
             encoder = TextBase64EncodePolicy()
@@ -62,14 +65,14 @@ def fanduel_sgp_queue_scrape(timer:func.TimerRequest):
     fanduel_pg = Postgres(psql_username, psql_password, 'fanduel')
     event_data = fanduel_get_events()
     now_plus_24 = datetime.utcnow() + relativedelta(hours=24)
-    next_24hrs = event_data.loc[event_data['openDate'] <= now_plus_24].reset_index(drop=True)
+    next_24hrs = event_data.loc[event_data['open_date'] <= now_plus_24].reset_index(drop=True)
     if not next_24hrs.empty:
         with fanduel_pg:
-            fanduel_pg.to_sql(next_24hrs, 'fanduel_events_meta', 'added')    
-        event_time_groups = next_24hrs.groupby('openDate')
+            fanduel_pg.to_sql(next_24hrs, 'events_meta', 'added')    
+        event_time_groups = next_24hrs.groupby('open_date')
         event_times = event_time_groups.groups.keys()
         for event_time in event_times:
-            fd_evnet_ids = event_time_groups.get_group(event_time)['eventId'].to_list()
+            fd_evnet_ids = event_time_groups.get_group(event_time)['event_id'].to_list()
             msg_dict = {'func':'fanduel', 'event_ids':fd_evnet_ids}
             fanduel_timeout = (event_time-datetime.utcnow()).seconds-180
             encoder = TextBase64EncodePolicy()
@@ -87,14 +90,14 @@ def sgp_scrape(azqueue:func.QueueMessage):
             time.sleep(2)
             event_sgp_data = fanduel_get_event_sgps(event_id=event_id)
             sgp_data = pd.concat([event_sgp_data, sgp_data])
-        columns = ['type', 'bettingOpportunityId', 'totalBets', 'eventId', 'competitionId', 'selections', 'americanOdds', 'decimalOdds', 'parlay_legs']
+        columns = ['type', 'betting_opportunity_id', 'total_bets', 'event_id', 'competition_id', 'selections', 'american_odds', 'decimal_odds', 'parlay_legs']
         sgp_data = sgp_data[columns]
         with fanduel_pg:
-            fanduel_pg.to_sql(sgp_data, 'fanduel_event_sgps', 'added')
+            fanduel_pg.to_sql(sgp_data, 'event_sgps', 'added')
     else:
         dkng_pg = Postgres(psql_username, psql_password, 'dkng')
         dkng_event_pre_fabs = get_event_pre_fabs(data_dict['event_ids'])
         dkng_event_sgps = dkng_get_event_sgps(dkng_event_pre_fabs)
         with dkng_pg:
-            dkng_pg.to_sql(dkng_event_pre_fabs, 'dkng_event_pre_fab_bets', 'added')
-            dkng_pg.to_sql(dkng_event_sgps, 'dkng_event_sgps', 'added')
+            dkng_pg.to_sql(dkng_event_pre_fabs, 'event_pre_fab_bets', 'added')
+            dkng_pg.to_sql(dkng_event_sgps, 'event_sgps', 'added')
