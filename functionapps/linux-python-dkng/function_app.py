@@ -32,7 +32,7 @@ sa_key = client.get_secret(SA_KEY_NAME).value
 
 app = func.FunctionApp()
 
-@app.timer_trigger(arg_name="timer", schedule="0 0 12 * * *", run_on_startup=False)
+@app.timer_trigger(arg_name="timer", schedule="0 0 12 * * *", run_on_startup=True)
 def dkng_sgp_queue_scrape(timer: func.TimerRequest):
     if timer.past_due:
         pass
@@ -58,7 +58,7 @@ def dkng_sgp_queue_scrape(timer: func.TimerRequest):
             queue.send_message(encoder.encode(json.dumps(msg_dict)), visibility_timeout=dkng_timeout)  
 
 
-@app.timer_trigger('timer', '0 0 12 * * *', run_on_startup=False)
+@app.timer_trigger('timer', '0 0 12 * * *', run_on_startup=True)
 def fanduel_sgp_queue_scrape(timer:func.TimerRequest):
     sa_connection_string = f"DefaultEndpointsProtocol=https;AccountName={SA_NAME};AccountKey={sa_key};EndpointSuffix=core.windows.net"
     queue = QueueClient.from_connection_string(sa_connection_string, "prod2queue")
