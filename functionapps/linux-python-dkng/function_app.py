@@ -32,7 +32,7 @@ sa_key = client.get_secret(SA_KEY_NAME).value
 
 app = func.FunctionApp()
 
-@app.timer_trigger(arg_name="timer", schedule="0 0 12 * * *", run_on_startup=True)
+@app.timer_trigger(arg_name="timer", schedule="0 0 12 * * *", run_on_startup=False)
 def dkng_sgp_queue_scrape(timer: func.TimerRequest):
     if timer.past_due:
         pass
