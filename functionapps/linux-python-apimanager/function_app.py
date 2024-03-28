@@ -25,6 +25,8 @@ secret_client = SecretClient(vault_url=KVUrl, credential=credential)
 # psql constants (used by Scraper class)
 os.environ['psql_username'] = secret_client.get_secret('PSQLUsername').value
 os.environ['psql_password'] = secret_client.get_secret('PSQLPassword').value  
+os.environ['sensortower_key'] = secret_client.get_secret('SensortowerKey').value
+os.environ['similarweb_key'] = secret_client.get_secret('SimilarwebKey').value
 
 # initialize function app
 app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
