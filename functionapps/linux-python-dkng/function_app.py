@@ -63,7 +63,9 @@ def fanduel_sgp_queue_scrape(timer:func.TimerRequest):
     sa_connection_string = f"DefaultEndpointsProtocol=https;AccountName={SA_NAME};AccountKey={sa_key};EndpointSuffix=core.windows.net"
     queue = QueueClient.from_connection_string(sa_connection_string, "prod2queue")
     fanduel_pg = Postgres(psql_username, psql_password, 'fanduel')
-    event_data = fanduel_get_events()
+    nba_event_data:pd.DataFrame = fanduel_get_events('NBA')
+    college_bball_event_data:pd.DataFrame = fanduel_get_events('College Basketball')
+    event_data = pd.concat([nba_event_data, college_bball_event_data], ignore_index=True)
     now_plus_24 = datetime.utcnow() + relativedelta(hours=24)
     next_24hrs = event_data.loc[event_data['open_date'] <= now_plus_24].reset_index(drop=True)
     if not next_24hrs.empty:
