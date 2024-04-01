@@ -113,7 +113,7 @@ def five_product_scrape(timer:func.TimerRequest):
     response = requests.get("https://linux-python-five-tcgdatasci.azurewebsites.net/api/scrapes/five/products")
     return response 
 
-# dks location scrape
+# dks location scrape 
 @app.timer_trigger('timer', '0 0 9 1 * *', run_on_startup=False)
 def dks_location_scrape(timer:func.TimerRequest):
     if timer.past_due:
