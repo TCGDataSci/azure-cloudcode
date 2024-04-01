@@ -35,7 +35,7 @@ app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
 # zip code scrape
 @app.route(route="scrapes/chtr/zip_codes", auth_level=func.AuthLevel.ANONYMOUS)
-def chtr_zip_code_check(req:func.TimerRequest):
+def chtr_zip_code_check(req:func.HttpRequest):
     pg_engine = create_engine(psql_connection.format(user=psql_username, password=psql_password)) 
     zip_codes = pd.read_sql_table('zip_codes', pg_engine, schema='chtr')
     for zip_code in zip_codes['zip_codes']:
@@ -47,7 +47,7 @@ def chtr_zip_code_check(req:func.TimerRequest):
 
 # random address scrape
 @app.route(route="scrapes/chtr/rando_addresses", auth_level=func.AuthLevel.ANONYMOUS)
-async def chtr_rando_addresses(req:func.TimerRequest):
+async def chtr_rando_addresses(req:func.HttpRequest):
     throttle = 5 
     allowed_consecutive_400s = 20
     scrape_guid = uuid.uuid4().hex

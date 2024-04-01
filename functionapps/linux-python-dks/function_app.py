@@ -13,6 +13,7 @@ import os
 import json
 import uuid
 import pandas as pd
+from io import BytesIO
 from datetime import datetime
 from sqlalchemy import create_engine, text
 
@@ -44,7 +45,7 @@ def dks_location_scrape(req:func.HttpRequest):
 @app.route(route="scrapes/dks/products", auth_level=func.AuthLevel.ANONYMOUS)
 def dks_product_scrape(req:func.HttpRequest):
     # get search term from request body
-    req_obj = json.load(req.get_body())
+    req_obj = json.load(BytesIO(req.get_body()))
     search_term = req_obj['search_term']
     # get most recent location data
     pg_engine = create_engine(psql_connection.format(user=psql_username, password=psql_password))
