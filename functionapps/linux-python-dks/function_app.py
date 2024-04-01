@@ -12,7 +12,6 @@ from tcgds.postgres import PandasPGHelper, psql_connection
 import os
 import json
 import uuid
-import logging
 import pandas as pd
 from io import BytesIO
 from datetime import datetime
@@ -53,7 +52,7 @@ def dks_product_scrape(req:func.HttpRequest):
     with pg_engine.connect() as pg_connection:
         query = ("select * from dks.store_locations where observed_date = (select max(observed_date) from dks.store_locations)")
         location_df = pd.read_sql_query(query, pg_connection)
-    # get get all product and sku data for search term
+    # get all product and sku data for search term
     product_search_results = get_all_products_search(search_term, report=True)
     skus_meta_df, skus_attributes_df = get_skus_data(product_search_results['dsg_seo_url'].to_list(), return_attributes=True, report=True)
     skus_inventory_df = get_inventory_data(skus_meta_df['sku_id'].to_list(), location_df['store_code'].astype(str).to_list(), report=True)

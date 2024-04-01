@@ -14,7 +14,7 @@ app = func.FunctionApp()
 
 # sensortower update  
 @app.timer_trigger('timer', '0 0 11 * * *', run_on_startup=False)
-def sensortower_update(timer:func.TimerRequest):
+def sensortower_update(timer:func.timer.TimerRequest):
     if timer.past_due:
         pass
     response = requests.get("https://linux-python-apimanager-tcgdatasci.azurewebsites.net/api/apis/sensortower/update")
@@ -22,7 +22,7 @@ def sensortower_update(timer:func.TimerRequest):
 
 # similarweb update
 @app.timer_trigger('timer', '0 0 11 * * *', run_on_startup=False)
-def similarweb_update(timer:func.TimerRequest):
+def similarweb_update(timer:func.timer.TimerRequest):
     if timer.past_due:
         pass
     response = requests.get("https://linux-python-apimanager-tcgdatasci.azurewebsites.net/api/apis/similarweb/update")
@@ -30,7 +30,7 @@ def similarweb_update(timer:func.TimerRequest):
 
 # whalewisdom update
 @app.timer_trigger('timer', '0 0 12,14,16,18,20 13-21 2,5,8,11 *' , run_on_startup=False)
-def whalewisdom_update(timer:func.TimerRequest):
+def whalewisdom_update(timer:func.timer.TimerRequest):
     if timer.past_due:
         pass
     response = requests.get("https://linux-python-apimanager-tcgdatasci.azurewebsites.net/api/apis/whalewisdom/13fupdate")
@@ -45,7 +45,7 @@ def whalewisdom_update(timer:func.TimerRequest):
 
 # dutchbros location scrape
 @app.timer_trigger('timer', "0 0 17 * * 0", run_on_startup=False)
-def dutchbros_location_scrape(timer:func.TimerRequest):
+def dutchbros_location_scrape(timer:func.timer.TimerRequest):
     if timer.past_due:
         pass
     response = requests.get("https://linux-python-small-scrapes-tcgdatasci.azurewebsites.net/api/scrapes/bros/locations")
@@ -53,7 +53,7 @@ def dutchbros_location_scrape(timer:func.TimerRequest):
 
 # avdx sales person schedule scrape
 @app.timer_trigger('timer', "0 0 8 * * 1-5", run_on_startup=False)
-def avdx_sales_schedule_scrape(timer:func.TimerRequest):
+def avdx_sales_schedule_scrape(timer:func.timer.TimerRequest):
     if timer.past_due:
         pass
     response = requests.get("https://linux-python-small-scrapes-tcgdatasci.azurewebsites.net/api/scrapes/avdx/salesSchedule") 
@@ -61,7 +61,7 @@ def avdx_sales_schedule_scrape(timer:func.TimerRequest):
 
 # five below locaton scrape
 @app.timer_trigger('timer', '0 0 9 * * 0', run_on_startup=False)
-def five_location_scrape(timer:func.TimerRequest):
+def five_location_scrape(timer:func.timer.TimerRequest):
     if timer.past_due:
         pass
     response = requests.get("https://linux-python-small-scrapes-tcgdatasci.azurewebsites.net/api/scrapes/five/locations")
@@ -69,7 +69,7 @@ def five_location_scrape(timer:func.TimerRequest):
 
 # fdic isider filing scrape
 @app.timer_trigger('timer', '0 0 0 * * *', run_on_startup=False)
-def fdic_insider_filing_scrape(timer:func.TimerRequest):
+def fdic_insider_filing_scrape(timer:func.timer.TimerRequest):
     if timer.past_due:
         pass
     response = requests.get("https://linux-python-small-scrapes-tcgdatasci.azurewebsites.net/api/scrapes/fdic/insiderFilings")
@@ -83,7 +83,7 @@ def fdic_insider_filing_scrape(timer:func.TimerRequest):
 
 # booking.com scrape
 @app.timer_trigger('timer', '0 0 8 1 * *', run_on_startup=False)
-def bookingdotcom_ushotels_scrape(timer:func.TimerRequest):
+def bookingdotcom_ushotels_scrape(timer:func.timer.TimerRequest):
     if timer.past_due:
         pass
     response = requests.get("https://linux-python-bookingdotcom-tcgdatasci.azurewebsites.net/api/scrapes/bookingdotcom/ushotels")
@@ -91,7 +91,7 @@ def bookingdotcom_ushotels_scrape(timer:func.TimerRequest):
 
 # charter random address scrape
 @app.timer_trigger('timer', '0 0 9 1 * *', run_on_startup=False)
-def chtr_address_scrape(timer:func.TimerRequest):
+def chtr_address_scrape(timer:func.timer.TimerRequest):
     if timer.past_due:
         pass
     response = requests.get("https://linux-python-chtr-tcgdatasci.azurewebsites.net/api/scrapes/chtr/rando_addresses")
@@ -99,7 +99,7 @@ def chtr_address_scrape(timer:func.TimerRequest):
 
 # charter zip code scrape
 @app.timer_trigger('timer', '0 0 9 15 * *', run_on_startup=False)
-def chtr_zipcode_scrape(timer:func.TimerRequest):
+def chtr_zipcode_scrape(timer:func.timer.TimerRequest):
     if timer.past_due:
         pass
     response = requests.get("https://linux-python-chtr-tcgdatasci.azurewebsites.net/api/scrapes/chtr/zip_codes")
@@ -107,7 +107,7 @@ def chtr_zipcode_scrape(timer:func.TimerRequest):
 
 # five below product scrape
 @app.timer_trigger('timer', '0 0 9 * * 0', run_on_startup=False)
-def five_product_scrape(timer:func.TimerRequest):
+def five_product_scrape(timer:func.timer.TimerRequest):
     if timer.past_due:
         pass
     response = requests.get("https://linux-python-five-tcgdatasci.azurewebsites.net/api/scrapes/five/products")
@@ -115,15 +115,16 @@ def five_product_scrape(timer:func.TimerRequest):
 
 # dks location scrape 
 @app.timer_trigger('timer', '0 0 9 1 * *', run_on_startup=False)
-def dks_location_scrape(timer:func.TimerRequest):
+def dks_location_scrape(timer:func.timer.TimerRequest):
     if timer.past_due:
         pass
     response = requests.get("https://linux-python-dks-tcgdatasci.azurewebsites.net/api/scrapes/dks/locations")
     return response 
 
 # dks product scrape ON
-@app.timer_trigger('timer', '0 0 9 1 * *', run_on_startup=True)
-def dks_on_product_scrape(timer:func.TimerRequest):
+@app.timer_trigger('timer', '0 0 9 1 * *', run_on_startup=False)
+def dks_on_product_scrape(timer:func.timer.TimerRequest):
+
     if timer.past_due:
         pass
     req_body = {'search_term':'on'}
@@ -132,9 +133,16 @@ def dks_on_product_scrape(timer:func.TimerRequest):
 
 # dks product scrape HOKA
 @app.timer_trigger('timer', '0 0 11 1 * *', run_on_startup=False)
-def dks_hoka_product_scrape(timer:func.TimerRequest):
+def dks_hoka_product_scrape(timer:func.timer.TimerRequest):
     if timer.past_due:
         pass
     req_body = {'search_term':'hoka'}
     response = requests.post("https://linux-python-dks-tcgdatasci.azurewebsites.net/api/scrapes/dks/products", json=req_body)
     return response 
+
+
+@app.timer_trigger('timer', '0 0 0 * * *', run_on_startup=True)
+def testing_trigger(timer:func.timer.TimerRequest):
+    import json
+    import logging
+    logging.log(3, f'{json.dumps(timer.schedule_status)}')
