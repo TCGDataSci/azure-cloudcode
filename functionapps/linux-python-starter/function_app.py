@@ -122,7 +122,7 @@ def dks_location_scrape(timer:func.TimerRequest):
     return response 
 
 # dks product scrape ON
-@app.timer_trigger('timer', '0 0 9 1 * *', run_on_startup=False)
+@app.timer_trigger('timer', '0 0 9 1 * *', run_on_startup=True)
 def dks_on_product_scrape(timer:func.TimerRequest):
     if timer.past_due:
         pass
