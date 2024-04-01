@@ -145,4 +145,5 @@ def dks_hoka_product_scrape(timer:func.timer.TimerRequest):
 def testing_trigger(timer:func.timer.TimerRequest):
     import json
     import logging
-    logging.log(3, f'{json.dumps(timer.schedule_status)}')
+    from tcgds.reporting import send_report
+    send_report('Testing Trigger', json.dumps(timer.schedule_status))
