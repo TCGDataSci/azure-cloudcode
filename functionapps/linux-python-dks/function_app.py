@@ -12,6 +12,7 @@ from tcgds.postgres import PandasPGHelper, psql_connection
 import os
 import json
 import uuid
+import logging
 import pandas as pd
 from io import BytesIO
 from datetime import datetime
@@ -46,9 +47,8 @@ def dks_location_scrape(req:func.HttpRequest):
 def dks_product_scrape(req:func.HttpRequest):
     # get search term from request body
     req_obj = json.load(BytesIO(req.get_body()))
-    search_term = req_obj['search_term']
-    import logging
-    logging.log(f"{search_term}")
+    search_term = req_obj['search_ter']
+    logging.log(3, search_term)
     # get most recent location data
 
     # pg_engine = create_engine(psql_connection.format(user=psql_username, password=psql_password))
