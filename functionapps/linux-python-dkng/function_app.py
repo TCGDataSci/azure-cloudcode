@@ -76,7 +76,7 @@ def fanduel_sgp_queue_scrape(timer:func.TimerRequest):
         for event_time in event_times:
             fd_evnet_ids = event_time_groups.get_group(event_time)['event_id'].to_list()
             msg_dict = {'func':'fanduel', 'event_ids':fd_evnet_ids}
-            fanduel_timeout = (event_time-datetime.utcnow()).seconds-180
+            fanduel_timeout = (event_time-datetime.utcnow()).seconds-420
             encoder = TextBase64EncodePolicy()
             queue.send_message(encoder.encode(json.dumps(msg_dict)), visibility_timeout=fanduel_timeout)
 
