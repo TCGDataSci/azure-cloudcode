@@ -32,7 +32,7 @@ secret_client = SecretClient(vault_url=KVUrl, credential=credential)
 # get secrets from azure key vault    
 os.environ['psql_username'] = psql_username = secret_client.get_secret('PSQLUsername').value  
 os.environ['psql_password'] = psql_password = secret_client.get_secret('PSQLPassword').value
-storage_connection_string = secret_client.get_secret('maintcgdssaConnectionString')
+storage_connection_string = secret_client.get_secret('mainStorageAccount')
 
 
 # initialize functionapp
