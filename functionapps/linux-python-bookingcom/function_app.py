@@ -69,7 +69,7 @@ async def bookingdotcom_ushotel_scrape(req:func.HttpRequest):
         try:
             response = s.get(url)
             custom_response = custom_format_response(response, scrape_guid=scrape_guid)
-            blob_name = blob_path_prefix+custom_response.url_uuid+'-'+datetime.strptime(custom_response['datetime'], "%Y-%m-%d %H:%M:%S").timestamp()+'.txt'
+            blob_name = blob_path_prefix+custom_response['url_uuid']+'-'+datetime.strptime(custom_response['datetime'], "%Y-%m-%d %H:%M:%S").timestamp()+'.txt'
             with BlobServiceClient.from_connection_string(storage_connection_string) as blob_service_client:
                 if (status_code:=response.status_code)>=200 and status_code<300:
                     # mutli thread these sections

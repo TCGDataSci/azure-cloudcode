@@ -82,7 +82,7 @@ def fdic_insider_filing_scrape(timer:func.timer.TimerRequest):
 ### LARGE SCRAPES ###
 
 # booking.com scrape
-@app.timer_trigger('timer', '0 0 8 1 * *', run_on_startup=False)
+@app.timer_trigger('timer', '0 0 8 1 * *', run_on_startup=True)
 def bookingdotcom_ushotels_scrape(timer:func.timer.TimerRequest):
     if timer.past_due:
         pass
@@ -144,6 +144,5 @@ def dks_hoka_product_scrape(timer:func.timer.TimerRequest):
 @app.timer_trigger('timer', '0 0 0 * * *', run_on_startup=True)
 def testing_trigger(timer:func.timer.TimerRequest):
     import json
-    import logging
     from tcgds.reporting import send_report
     send_report('Testing Trigger', json.dumps(timer.schedule_status))
