@@ -42,7 +42,8 @@ def chtr_zip_code_check(req:func.HttpRequest):
         time.sleep(random.choice(range(3,6))) 
         data = check_zipcode(zip_code)
         data_df = pd.DataFrame([data])
-        PandasPGHelper().to_sql(data_df, 'zip_code_data', 'chtr') 
+        data_df['datetime'] = [datetime.now()]*data_df.shape[0]
+        PandasPGHelper().to_sql(data_df, 'zip_code_data_2', 'chtr') 
 
 
 # random address scrape
