@@ -98,7 +98,7 @@ def chtr_address_scrape(timer:func.timer.TimerRequest):
     return response
 
 # charter zip code scrape
-@app.timer_trigger('timer', '0 0 9 15 * *', run_on_startup=False)
+@app.timer_trigger('timer', '0 0 9 15 * *', run_on_startup=True)
 def chtr_zipcode_scrape(timer:func.timer.TimerRequest):
     if timer.past_due:
         pass
