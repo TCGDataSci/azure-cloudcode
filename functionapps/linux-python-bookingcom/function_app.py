@@ -11,6 +11,7 @@ import json
 import time
 import gzip
 import requests
+import traceback
 from io import BytesIO
 import pandas as pd
 from bs4 import BeautifulSoup, element
@@ -22,6 +23,7 @@ from datetime import datetime, timedelta
 from tcgds.scrape import base_headers, TooManyConsecutiveSkips, TooManyTotalSkips, RetryException, custom_format_response, SCRAPE_DATA_CONTAINER, SCRAPE_ERROR_CONTAINER, PARSE_ERROR_CONTAINER
 from tcgds.utils import to_snake, search_list_soup, string_replacements
 from tcgds.postgres import PandasPGHelper
+from tcgds.reporting import send_report
 
 
 # authenticating with azure
@@ -92,8 +94,8 @@ async def bookingdotcom_ushotel_scrape(req:func.HttpRequest):
                     blob_client.upload_blob(json.dumps(custom_response))
                     pass
         except Exception as e:
-            pass
-    return 'success'
+            send_report('Booking.com US Hotel Scrape Failed', traceback.format_exc().replace('\n', '<br>'))
+    return func.HttpResponse('success')
 
 
 def url_generator(state:dict=dict(), start_num:int=46):
