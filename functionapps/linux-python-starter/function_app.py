@@ -86,7 +86,7 @@ def fdic_insider_filing_scrape(timer:func.timer.TimerRequest):
 def bookingdotcom_ushotels_scrape(timer:func.timer.TimerRequest):
     if timer.past_due:
         pass
-    response = requests.get("https://linux-python-bookingdotcom-tcgdatasci.azurewebsites.net/api/scrapes/bookingdotcom/ushotels")
+    response = requests.get("https://linux-python-bookingcom-tcgdatasci.azurewebsites.net/api/scrapes/bookingdotcom/ushotels")
     return response
 
 # charter random address scrape

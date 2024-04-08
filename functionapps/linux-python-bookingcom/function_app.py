@@ -59,6 +59,7 @@ async def bookingdotcom_ushotel_scrape(req:func.HttpRequest):
     s = requests.Session()
     r = requests.adapters.Retry(total=total_retries, backoff_factor=backoff_factor, status_forcelist=status_forcelist)
     s.mount('https://', requests.adapters.HTTPAdapter(max_retries=r)) 
+    # s.hooks['response'].append(print)
     s.headers = base_headers
 
 
