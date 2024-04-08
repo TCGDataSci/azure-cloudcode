@@ -95,6 +95,7 @@ async def bookingdotcom_ushotel_scrape(req:func.HttpRequest):
                     pass
         except Exception as e:
             send_report('Booking.com US Hotel Scrape Failed', traceback.format_exc().replace('\n', '<br>'))
+            return func.HttpResponse('failed')
     return func.HttpResponse('success')
 
 
