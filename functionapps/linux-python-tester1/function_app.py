@@ -90,7 +90,7 @@ def timer_queue_creation(timer:func.timer.TimerRequest):
 def queue_handler(queue:func.QueueMessage):
     try:
         message = json.loads(queue.get_body().decode('utf-8'))
-        request_body = {'operation_id':message['operation_id'], 'instance_id':message['instance_id']}
+        request_body = {'operation_name':message['operation_name'], 'operation_id':message['operation_id'], 'instance_id':message['instance_id']}
         if message['body'] is not None:
             request_body.update(message['body'])
         requests.request(message['request_method'], message['endpoint'], json=request_body)
