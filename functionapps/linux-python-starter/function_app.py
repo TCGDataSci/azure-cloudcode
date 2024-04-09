@@ -140,9 +140,45 @@ def dks_hoka_product_scrape(timer:func.timer.TimerRequest):
     response = requests.post("https://linux-python-dks-tcgdatasci.azurewebsites.net/api/scrapes/dks/products", json=req_body)
     return response 
 
+from azure.keyvault.secrets import SecretClient
+from azure.identity import EnvironmentCredential
+from azure.storage.queue import QueueClient, TextBase64EncodePolicy
+from sqlalchemy import create_engine, text, select
+from tcgds.postgres import psql_connection, Operations
+import pandas as pd
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
+from croniter import croniter
 
-@app.timer_trigger('timer', '0 0 0 * * *', run_on_startup=True)
-def testing_trigger(timer:func.timer.TimerRequest):
-    import json
-    from tcgds.reporting import send_report
-    send_report('Testing Trigger', json.dumps(timer.schedule_status))
+credential = EnvironmentCredential()
+encoder = TextBase64EncodePolicy()
+
+KVUrl = "https://tcgdsvault.vault.azure.net/"
+client = SecretClient(vault_url=KVUrl, credential=credential)
+psql_username = client.get_secret('PSQLUsername').value
+psql_password = client.get_secret('PSQLPassword').value
+sa_connection_string = client.get_secret('mainStorageAccount').value
+psql_engine = create_engine(psql_connection.format(user=psql_username, password=psql_password))
+
+
+@app.timer_trigger('timer', "0 0 11,23 * * *", run_on_startup=False)
+def queue_method_test(timer:func.timer.TimerRequest):
+    if timer.past_due:
+        pass
+    time_now = datetime.now()
+    time_plus_12 = time_now + relativedelta(hours=12)
+    # get scheduled operations
+    with psql_engine.connect() as psql_connection:
+        q = select(Operations.__table__)
+        q_results = psql_connection.execute(q).all()
+        results_df = pd.DataFrame(q_results)
+    # add operations within 12 hours to queues
+    queue_client = QueueClient.from_connection_string(sa_connection_string, 'operations-queue')
+    for row in results_df.iterrows():
+        cron_expr = row[1]['cron_schedule']
+        if croniter.match_range(cron_expr, time_now, time_plus_12):
+            message = row[1].to_dict()
+            encoded_message = encoder.encode(json.dumps(message))
+            queuetime = (croniter(cron_expr).get_next(datetime) - croniter(cron_expr).get_current(datetime)).total_seconds()
+            queue_client.send_message(encoded_message, visibility_timeout=queuetime)
+    queue_client.close()

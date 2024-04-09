@@ -45,7 +45,7 @@ def dks_location_scrape(req:func.HttpRequest):
 @app.route(route="scrapes/dks/products", auth_level=func.AuthLevel.ANONYMOUS)
 def dks_product_scrape(req:func.HttpRequest):
     # get search term from request body
-    req_obj = json.load(BytesIO(req.get_body()))
+    req_obj = req.get_json()
     search_term = req_obj['search_term']
     # get most recent location data
     pg_engine = create_engine(psql_connection.format(user=psql_username, password=psql_password))
