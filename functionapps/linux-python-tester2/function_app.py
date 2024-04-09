@@ -30,7 +30,7 @@ psql_engine = create_engine(psql_connection.format(user=psql_username, password=
 app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
 
-@app.route('testing/bookscrape')
+@app.route('testing/bookstoscrape')
 def bookscrape_scrape(req:func.HttpRequest):
     req_obj = req.get_json()
     pdpg_helper = PandasPGHelper()
@@ -59,7 +59,7 @@ def bookscrape_scrape(req:func.HttpRequest):
                     data_df = parse(custom_response['resp_text'])
                     pdpg_helper.to_sql(data_df, 'catalogue_data', 'bookstoscrape', if_exists='replace')
                 except:
-                    blob_response_saver.save_custom_response(custom_response, blob_path+'/parse-errors')
+                    blob_response_saver.save_custom_response(custom_response, blob_path+'/'+PARSE_ERROR_PATH)
 
 
             except:
