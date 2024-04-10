@@ -13,7 +13,7 @@ app = func.FunctionApp()
 ### APIS ###
 
 # sensortower update  
-@app.timer_trigger('timer', '0 0 11 * * *', run_on_startup=False)
+@app.timer_trigger('timer', '0 0 11 * * *', run_on_startup=True)
 def sensortower_update(timer:func.timer.TimerRequest):
     if timer.past_due:
         pass
@@ -21,7 +21,7 @@ def sensortower_update(timer:func.timer.TimerRequest):
     
 
 # similarweb update
-@app.timer_trigger('timer', '0 0 11 * * *', run_on_startup=False)
+@app.timer_trigger('timer', '0 0 11 * * *', run_on_startup=True)
 def similarweb_update(timer:func.timer.TimerRequest):
     if timer.past_due:
         pass
@@ -52,7 +52,7 @@ def dutchbros_location_scrape(timer:func.timer.TimerRequest):
     
 
 # avdx sales person schedule scrape
-@app.timer_trigger('timer', "0 0 8 * * 1-5", run_on_startup=False)
+@app.timer_trigger('timer', "0 0 8 * * 1-5", run_on_startup=True)
 def avdx_sales_schedule_scrape(timer:func.timer.TimerRequest):
     if timer.past_due:
         pass
@@ -82,7 +82,7 @@ def fdic_insider_filing_scrape(timer:func.timer.TimerRequest):
 ### LARGE SCRAPES ###
 
 # booking.com scrape
-@app.timer_trigger('timer', '0 0 8 1 * *', run_on_startup=True)
+@app.timer_trigger('timer', '0 0 8 1 * *', run_on_startup=False)
 def bookingdotcom_ushotels_scrape(timer:func.timer.TimerRequest):
     if timer.past_due:
         pass
