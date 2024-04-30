@@ -5,7 +5,7 @@ from azure.identity import EnvironmentCredential
 from azure.storage.queue import QueueClient, TextBase64EncodePolicy
 
 # tcgds imports
-from tcgds.reporting import send_email_report, ExceptionHandler, pandas_to_html_col_foramtter
+from tcgds.reporting import send_email_report, EmailExceptionHandler, pandas_to_html_col_foramtter
 from tcgds.postgres import psql_connection_string
 from tcgds.jobs import Job, Instance
 
@@ -43,8 +43,9 @@ JOBS_QUEUE = 'jobs-queue'
 def queue_jobs(timer:func.timer.TimerRequest):
     # initiate connections
     with ExitStack() as stack:
-        exc_handler = stack.enter_context(ExceptionHandler())
-        exc_handler.subject_contexts.append('Job Queueing Exception:')
+        exc_handler = stack.enter_context(EmailExceptionHandler())
+        base_subject = 'Job Queueing Exception:'
+        exc_handler.subject = base_subject
         psql_connection_string = stack.enter_context(psql_engine.connect())
         queue_client = stack.enter_context(QueueClient.from_connection_string(sa_connection_string, JOBS_QUEUE))
 
@@ -55,7 +56,7 @@ def queue_jobs(timer:func.timer.TimerRequest):
         twelve_hours_later = time_now + relativedelta(hours=12)
 
 
-        exc_handler.subject = 'Querying Job from Postgres'
+        exc_handler.subject = base_subject + 'Querying Job from Postgres'
         # get Job meta data
         q = select(Job)
         q_results = psql_connection_string.execute(q).all()
@@ -68,21 +69,21 @@ def queue_jobs(timer:func.timer.TimerRequest):
                 # add to Job queue 
             if croniter.match_range(cron_expr, time_now, twelve_hours_later):
                 message = row[1].to_dict()
-                exc_handler.subject = f'Failed to queue job {message['job_name']}'
+                exc_handler.subject = base_subject + f'Failed to queue job {message['job_name']}'
                 message['instance_id'] = uuid.uuid4().hex # create instance id for operation execution
                 encoded_message = encoder.encode(json.dumps(message))
                 queuetime = ((start_time:=croniter(cron_expr).get_next(datetime)) - croniter(cron_expr).get_current(datetime)).total_seconds()
                 queue_client.send_message(encoded_message, visibility_timeout=queuetime)
-                exc_handler.subject = None
+                exc_handler.subject = base_subject
             # add instance to Instance table in postgres
-            exc_handler.subject = f'Failed to update Instance table for operation {message['job_name']}'
+            exc_handler.subject = base_subject + f'Failed to update Instance table for operation {message['job_name']}'
             status = 'queued'
             stmt = (
                 insert(Instance).
                 values(instance_id=message['instance_id'], job_id=message['job_id'], status=status, start_time=start_time)
             )
             psql_connection_string.execute(stmt)
-            exc_handler.subject = None
+            exc_handler.subject = base_subject
 
 
 
@@ -90,7 +91,7 @@ def queue_jobs(timer:func.timer.TimerRequest):
 def send_daily_instance_report(timer:func.TimerRequest):
     pg_engine = create_engine(psql_connection_string.format(user=psql_username, passwrod=psql_password))
     with ExitStack() as stack:
-        exc_handler = stack.enter_context(ExceptionHandler())
+        exc_handler = stack.enter_context(EmailExceptionHandler())
         exc_handler.subject = "Daily Instance Report Exception:"
 
         if timer.past_due:
@@ -115,8 +116,8 @@ def send_daily_instance_report(timer:func.TimerRequest):
 
 @app.queue_trigger('queue', JOBS_QUEUE)
 def queue_handler(queue:func.QueueMessage):
-    with ExceptionHandler() as exc_handler:
-        exc_handler.subject_contexts.append('Job Queue Handler Exception:')
+    with EmailExceptionHandler() as exc_handler:
+        exc_handler.subject = 'Job Queue Handler Exception:'
         message = json.loads(queue.get_body().decode('utf-8'))
         exc_handler.subject = f'Failed to start job {message['job_name']} with instance_id {message['instance_id']}'
         request_body = {'job_name':message['job_name'], 'job_id':message['job_id'], 'instance_id':message['instance_id']}
