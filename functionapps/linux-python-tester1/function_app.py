@@ -5,19 +5,21 @@ from azure.identity import EnvironmentCredential
 from azure.storage.queue import QueueClient, TextBase64EncodePolicy
 
 # tcgds imports
-from tcgds.postgres import psql_connection, Operations, Instances
-from tcgds.reporting import send_report
+from tcgds.reporting import send_email_report, ExceptionHandler, pandas_to_html_col_foramtter
+from tcgds.postgres import psql_connection_string
+from tcgds.jobs import Job, Instance
+
 
 # other
 import uuid
 import json
 import requests
-import traceback
 import pandas as pd
 from croniter import croniter
-from datetime import datetime
+from datetime import datetime, UTC
 from dateutil.relativedelta import relativedelta
-from sqlalchemy import create_engine, text, select, insert
+from sqlalchemy import create_engine, select, insert
+from contextlib import ExitStack
 
 
 
@@ -30,72 +32,94 @@ client = SecretClient(vault_url=KVUrl, credential=credential)
 psql_username = client.get_secret('PSQLUsername').value
 psql_password = client.get_secret('PSQLPassword').value
 sa_connection_string = client.get_secret('mainStorageAccount').value
-psql_engine = create_engine(psql_connection.format(user=psql_username, password=psql_password))
+psql_engine = create_engine(psql_connection_string.format(user=psql_username, password=psql_password))
 
 
 app = func.FunctionApp()
 
-OPS_QUEUE = 'operations-queue'
+JOBS_QUEUE = 'jobs-queue'
 
 @app.timer_trigger('timer', "0 0 11,23 * * *", run_on_startup=False)
-def timer_queue_creation(timer:func.timer.TimerRequest):
-    try:
-        # initiate connections
-        with psql_engine.connect() as psql_connection: 
-            with QueueClient.from_connection_string(sa_connection_string, OPS_QUEUE) as queue_client:
-                if timer.past_due:
-                    pass
-                # set times
-                time_now = datetime.now()
-                time_plus_12 = time_now + relativedelta(hours=12)
+def queue_jobs(timer:func.timer.TimerRequest):
+    # initiate connections
+    with ExitStack() as stack:
+        exc_handler = stack.enter_context(ExceptionHandler())
+        exc_handler.subject_contexts.append('Job Queueing Exception:')
+        psql_connection_string = stack.enter_context(psql_engine.connect())
+        queue_client = stack.enter_context(QueueClient.from_connection_string(sa_connection_string, JOBS_QUEUE))
+
+        if timer.past_due:
+            pass
+        # set times
+        time_now = datetime.now(tz=UTC)
+        twelve_hours_later = time_now + relativedelta(hours=12)
 
 
-                try:
-                    # get operations meta data
-                    q = select(Operations.__table__)
-                    q_results = psql_connection.execute(q).all()
-                    results_df = pd.DataFrame(q_results)
-                except:
-                    send_report('Failed to get Operations table from postgres', traceback.format_exc().replace('\n', '<br>'))
+        exc_handler.subject = 'Querying Job from Postgres'
+        # get Job meta data
+        q = select(Job)
+        q_results = psql_connection_string.execute(q).all()
+        results_df = pd.DataFrame(q_results)
+        exc_handler.subject = None
 
-                # add operations within 12 hours to queues
-                for row in results_df.iterrows():
-                    cron_expr = row[1]['cron_schedule']
-                        # add to operations queue 
-                    if croniter.match_range(cron_expr, time_now, time_plus_12):
-                        try:
-                            message = row[1].to_dict()
-                            message['instance_id'] = uuid.uuid4().hex # create instance id for operation execution
-                            encoded_message = encoder.encode(json.dumps(message))
-                            queuetime = ((start_time:=croniter(cron_expr).get_next(datetime)) - croniter(cron_expr).get_current(datetime)).total_seconds()
-                            queue_client.send_message(encoded_message, visibility_timeout=queuetime)
-                        except:
-                            send_report(f'Failed to queue operation {message['operation_name']}', traceback.format_exc().replace('\n','<br>'))
-                    # add instance to instances table in postgres
-                    try:
-                        status = 'queued'
-                        stmt = (
-                            insert(Instances.__table__).
-                            values(instance_id=message['instance_id'], operation_id=message['operation_id'], status=status, start_time=start_time)
-                        )
-                        psql_connection.execute(stmt)
-                    except:
-                        send_report(f'Failed to update Instances table for operation {message['operation_name']}', traceback.format_exc().replace('\n', '<br>'))
-    except:
-        send_report('Something failed in queueing operations', traceback.format_exc().replace('\n', '<br>'))
+        # add Job within 12 hours to queues
+        for row in results_df.iterrows():
+            cron_expr = row[1]['cron_schedule']
+                # add to Job queue 
+            if croniter.match_range(cron_expr, time_now, twelve_hours_later):
+                message = row[1].to_dict()
+                exc_handler.subject = f'Failed to queue job {message['job_name']}'
+                message['instance_id'] = uuid.uuid4().hex # create instance id for operation execution
+                encoded_message = encoder.encode(json.dumps(message))
+                queuetime = ((start_time:=croniter(cron_expr).get_next(datetime)) - croniter(cron_expr).get_current(datetime)).total_seconds()
+                queue_client.send_message(encoded_message, visibility_timeout=queuetime)
+                exc_handler.subject = None
+            # add instance to Instance table in postgres
+            exc_handler.subject = f'Failed to update Instance table for operation {message['job_name']}'
+            status = 'queued'
+            stmt = (
+                insert(Instance).
+                values(instance_id=message['instance_id'], job_id=message['job_id'], status=status, start_time=start_time)
+            )
+            psql_connection_string.execute(stmt)
+            exc_handler.subject = None
 
 
 
-@app.queue_trigger('queue', OPS_QUEUE)
+@app.timer_trigger('timer', '0 15 11,23 * *', run_on_startup=False)
+def send_daily_instance_report(timer:func.TimerRequest):
+    pg_engine = create_engine(psql_connection_string.format(user=psql_username, passwrod=psql_password))
+    with ExitStack() as stack:
+        exc_handler = stack.enter_context(ExceptionHandler())
+        exc_handler.subject = "Daily Instance Report Exception:"
+
+        if timer.past_due:
+            pass
+        stati_lst = ['queued', 'running', 'failed', 'completed']
+
+        pg_connection = stack.enter_context(pg_engine.connect())
+        for status in stati_lst:            
+            if status=="completed" or status=="failed":
+                twelve_hrs_ago = (datetime.now(tz=UTC) - relativedelta(hours=12)) 
+                query = select(Job.job_name, Job.job_id, Instance.instance_id, Instance.status, Instance.start_time).join(Job, Instance.job_id==Job.job_id).where(Instance.status==status, Instance.end_time>=twelve_hrs_ago) 
+            else:
+                query = select(Job.job_name, Job.job_id, Instance.instance_id, Instance.status, Instance.start_time).join(Job, Instance.job_id==Job.job_id).where(Instance.status==status)
+            results = pd.DataFrame(pg_connection.execute(query).all())
+            email_body = f'{status.capitalize()}:<br>'
+            email_body+=results.to_html(index=False, formatters=[pandas_to_html_col_foramtter]*results.shape[1])
+            email_body+='<br>'
+        send_email_report('Daily Instance Report', email_body)
+
+
+
+
+@app.queue_trigger('queue', JOBS_QUEUE)
 def queue_handler(queue:func.QueueMessage):
-    try:
+    with ExceptionHandler() as exc_handler:
+        exc_handler.subject_contexts.append('Job Queue Handler Exception:')
         message = json.loads(queue.get_body().decode('utf-8'))
-        request_body = {'operation_name':message['operation_name'], 'operation_id':message['operation_id'], 'instance_id':message['instance_id']}
+        exc_handler.subject = f'Failed to start job {message['job_name']} with instance_id {message['instance_id']}'
+        request_body = {'job_name':message['job_name'], 'job_id':message['job_id'], 'instance_id':message['instance_id']}
         if message['body'] is not None:
             request_body.update(message['body'])
         requests.request(message['request_method'], message['endpoint'], json=request_body)
-    except:
-        if 'message' in locals():
-            send_report(f'Failed to start operation {message['operation_name']} with instance_id {message['instance_id']}', traceback.format_exc().replace('\n', '<br>'))
-        else:
-            send_report(f'Failed to start operation', traceback.format_exc().replace('\n', '<br>'))

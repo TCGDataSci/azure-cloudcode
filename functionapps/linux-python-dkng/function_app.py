@@ -43,7 +43,7 @@ def dkng_sgp_queue_scrape(timer: func.TimerRequest):
     m_college_bball_event_data = dkng_get_events(sport_groups_keys['Men College Basketball']['eventGroupId'])
     w_college_bball_event_data = dkng_get_events(sport_groups_keys['Women College Basketball']['eventGroupId'])
     dkng_event_data = pd.concat([nba_event_data, m_college_bball_event_data, w_college_bball_event_data], ignore_index=True)
-    now_plus_24 = datetime.utcnow() + relativedelta(hours=24) 
+    now_plus_24 = datetime.utcnow()     + relativedelta(hours=24) 
     dkng_next_24hrs = dkng_event_data.loc[dkng_event_data['start_date'] <= now_plus_24].reset_index(drop=True)
     if not dkng_next_24hrs.empty:
         with dkng_pg:
