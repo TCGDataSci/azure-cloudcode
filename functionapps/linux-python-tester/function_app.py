@@ -11,7 +11,7 @@ import azure.functions as func
 # tcgds imports
 from tcgds.jobs import InstanceMetric
 from tcgds.scrape import ResponseCodes
-from tcgds.postgres import PandasPGHelper
+from tcgds.postgres import PostgresHelper
 from tcgds.reporting import EmailExceptionHandler
 from tcgds.scrape import Scraper, Step, base_headers
 from tcgds.scrapes.bookstoscrape import catalogue_page_parser, book_page_parser, get_next_catalogue_page, init_step, base_url, catalogue_url, append_url
@@ -94,7 +94,7 @@ def bookstocrape_scrape(req:func.HttpRequest):
                 if scraper.route.changed_level_up:
                     book_df = pd.DataFrame(book_data_lst)
                     merged_df = catalogue_df.merge(book_df, on='title', how='left')
-                    affected_rows = PandasPGHelper(auth_environment='local').to_sql(merged_df, 'book_data', 'bookstoscrape', affected_rows=True)
+                    affected_rows = PostgresHelper(auth_environment='local').to_sql(merged_df, 'book_data', 'bookstoscrape', affected_rows=True)
                     # reset data objects
                     catalogue_df = pd.DataFrame()
                     book_data_lst.clear()

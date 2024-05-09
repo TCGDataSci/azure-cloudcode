@@ -10,6 +10,5 @@ aiohttp
 aiolimiter
 aiometer
 pymongo
-croniter
 lxml
 git+https://${GIT_MACHINE_USER}:${GIT_MACHINE_TOKEN}@github.com/TCGDataSci/PyTcgds.git#egg=tcgds

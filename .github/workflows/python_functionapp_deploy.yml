@@ -7,9 +7,13 @@ on:
         description: 'the function to deploy'
         required: true
         type: string
+      machine_name:
+        description: 'the machine to deploy the function to'
+        required: true
+        type: string
       environment:
         description: 'environment to deploy (e.g. production, development)'
-        default: 'development'
+        default: 'production'
         required: false
         type: string
       python_version:
@@ -31,7 +35,7 @@ jobs:
     - name:
       id: vars
       run: |
-        fname=${{inputs.function_name}}
+        fname=${{inputs.machine_name}}
         ufname=${fname^^}
         echo "SECRET_NAME=${ufname//-/_}_PUBLISH_PROFILE" >> $GITHUB_OUTPUT
 
@@ -57,7 +61,7 @@ jobs:
       uses: Azure/functions-action@v1
       id: fa
       with:
-        app-name: ${{inputs.function_name}}-tcgdatasci
+        app-name: ${{inputs.function_name}}
         package: ${{env.package_path}}
         publish-profile: ${{secrets[steps.vars.outputs.SECRET_NAME]}}
         enable-oryx-build: true 
