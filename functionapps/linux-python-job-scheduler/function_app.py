@@ -63,7 +63,8 @@ def queue_jobs(timer:func.timer.TimerRequest):
                 # add to Job queue 
             if croniter.match_range(cron_expr, time_now, twelve_hours_later):
                 message = row[1].to_dict()
-                exc_handler.subject = base_subject + f'Failed to queue job {message['job_name']}'
+                job_name = message['job_name']
+                exc_handler.subject = base_subject + f'Failed to queue job {job_name}'
                 message['instance_id'] = uuid.uuid4().hex # create instance id for operation execution
                 encoder = TextBase64EncodePolicy()
                 encoded_message = encoder.encode(json.dumps(message))
@@ -71,7 +72,7 @@ def queue_jobs(timer:func.timer.TimerRequest):
                 queue_client.send_message(encoded_message, visibility_timeout=queuetime)
                 exc_handler.subject = base_subject
             # add instance to Instance table in postgres
-            exc_handler.subject = base_subject + f'Failed to update Instance table for operation {message['job_name']}'
+            exc_handler.subject = base_subject + f'Failed to update Instance table for operation {job_name}'
             status = 'queued'
             stmt = (
                 insert(Instance).
@@ -97,7 +98,8 @@ def http_queue_jobs(req:func.HttpRequest):
         # add job to queue
         message = req.get_json()
         cron_expr = message['cron_schedule']
-        exc_handler.subject = base_subject + f'Failed to queue job {message['job_name']}'
+        job_name = message['job_name']
+        exc_handler.subject = base_subject + f'Failed to queue job {job_name}'
         message['instance_id'] = uuid.uuid4().hex # create instance id for operation execution
         encoder = TextBase64EncodePolicy()
         encoded_message = encoder.encode(json.dumps(message))
@@ -105,7 +107,7 @@ def http_queue_jobs(req:func.HttpRequest):
         queue_client.send_message(encoded_message, visibility_timeout=queuetime)
         exc_handler.subject = base_subject
         # add instance to Instance table in postgres
-        exc_handler.subject = base_subject + f'Failed to update Instance table for operation {message['job_name']}'
+        exc_handler.subject = base_subject + f'Failed to update Instance table for operation {job_name}'
         status = 'queued'
         stmt = (
             insert(Instance).
