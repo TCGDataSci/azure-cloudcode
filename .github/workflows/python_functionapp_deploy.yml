@@ -3,7 +3,7 @@ name: DeployFunctionApp
 on:
   workflow_dispatch:
     inputs:
-      function_name:
+      folder_name:
         description: 'the function to deploy'
         required: true
         type: string
@@ -22,7 +22,7 @@ on:
         required: false
         type: string 
 env:
-  package_path: './functionapps/${{inputs.function_name}}/'
+  package_path: './functionapps/${{inputs.folder_name}}/'
   GIT_MACHINE_TOKEN: ${{secrets.GIT_MACHINE_TOKEN}}
   GIT_MACHINE_USER: ${{secrets.GIT_MACHINE_USER}}
     
@@ -61,7 +61,7 @@ jobs:
       uses: Azure/functions-action@v1
       id: fa
       with:
-        app-name: ${{inputs.function_name}}
+        app-name: ${{inputs.machine_name}}
         package: ${{env.package_path}}
         publish-profile: ${{secrets[steps.vars.outputs.SECRET_NAME]}}
         enable-oryx-build: true 
