@@ -42,7 +42,7 @@ def queue_jobs(timer:func.timer.TimerRequest):
         exc_handler.subject = base_subject
         psql_engine = create_engine(psql_connection_string.format(user=psql_username, password=psql_password))
         psql_connection = stack.enter_context(psql_engine.connect())
-        queue_client = stack.enter_context(QueueClient.from_connection_string(os.environ['JOBS_QUEUE_CONNECTION_STRING'], JOBS_QUEUE))
+        queue_client = stack.enter_context(QueueClient.from_connection_string(os.environ['Job_Queue_Connection_String'], JOBS_QUEUE))
         if timer.past_due:
             pass
         # set times
@@ -93,7 +93,7 @@ def http_queue_jobs(req:func.HttpRequest):
         exc_handler.subject = base_subject
         psql_engine = create_engine(psql_connection_string.format(user=psql_username, password=psql_password))
         psql_connection = stack.enter_context(psql_engine.connect())
-        queue_client = stack.enter_context(QueueClient.from_connection_string(os.environ['JOBS_QUEUE_CONNECTION_STRING'], JOBS_QUEUE))
+        queue_client = stack.enter_context(QueueClient.from_connection_string(os.environ['Job_Queue_Connection_String'], JOBS_QUEUE))
 
         # add job to queue
         message = req.get_json()
