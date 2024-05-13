@@ -64,7 +64,7 @@ jobs:
       id: fa
       with:
         app-name: ${{inputs.machine_name}}
-        package: ${{env.package_path}}
+        package: ${{env.target_package_path}}
         publish-profile: ${{secrets[steps.vars.outputs.SECRET_NAME]}}
         enable-oryx-build: true 
         scm-do-build-during-deployment: true
