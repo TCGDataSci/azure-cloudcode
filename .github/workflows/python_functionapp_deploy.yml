@@ -23,7 +23,7 @@ on:
         type: string 
 env:
   package_path: './functionapps/${{inputs.folder_name}}/'
-  target_package_path: './${{inputs.machine_name}}/'
+  target_package_path: './fucntionapps/${{inputs.machine_name}}/'
   GIT_MACHINE_TOKEN: ${{secrets.GIT_MACHINE_TOKEN}}
   GIT_MACHINE_USER: ${{secrets.GIT_MACHINE_USER}}
     
@@ -55,17 +55,15 @@ jobs:
 
     - name: Resolve project dependencies using pip
       run: |
-        pushd '${{env.package_path}}'
         python -m pip install --upgrade pip
-        python -m pip install -r requirements.txt --target=".python_packages/lib/site-packages"
-        popd
+        python -m pip install -r ${{env.package_path}}requirements.txt --target="${{env.target_package_path}}.python_packages/lib/site-packages"
 
     - name: Run Azure Functions Action
       uses: Azure/functions-action@v1
       id: fa
       with:
         app-name: ${{inputs.machine_name}}
-        package: ${{env.package_path}}
+        package: ${{env.target_package_path}}
         publish-profile: ${{secrets[steps.vars.outputs.SECRET_NAME]}}
         enable-oryx-build: true 
         scm-do-build-during-deployment: true
