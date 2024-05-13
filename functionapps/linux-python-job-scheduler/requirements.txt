@@ -3,6 +3,7 @@ azure-functions
 azure-functions-durable
 azure-identity
 azure-keyvault-secrets
+azure-keyvault
 azure-storage-blob
 azure-storage-queue
 requests

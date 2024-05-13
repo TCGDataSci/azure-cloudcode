@@ -1,7 +1,5 @@
 # azure imports 
 import azure.functions as func
-from azure.keyvault.secrets import SecretClient
-from azure.identity import EnvironmentCredential
 from azure.storage.queue import QueueClient, TextBase64EncodePolicy
 
 # tcgds imports
