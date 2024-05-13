@@ -32,7 +32,7 @@ with Auth('virtual') as auth:
 
 # queue jobs via timer trigger runs every 12 hours
 @app.timer_trigger('timer', "0 0 11,23 * * *", run_on_startup=False)
-def queue_jobs(timer:func.timer.TimerRequest):
+def queue_jobs(timer:func.TimerRequest):
     # initiate connections
     with ExitStack() as stack:
         exc_handler = stack.enter_context(EmailExceptionHandler())
@@ -72,10 +72,7 @@ def queue_jobs(timer:func.timer.TimerRequest):
             # add instance to Instance table in postgres
             exc_handler.subject = base_subject + f'Failed to update Instance table for operation {job_name}'
             status = 'queued'
-            stmt = (
-                insert(Instance).
-                values(id=message['instance_id'], job_id=message['job_id'], status=status, start_time=start_time)
-            )
+            stmt = (insert(Instance).values(id=message['instance_id'], job_id=message['job_id'], status=status, start_time=start_time))
             psql_connection.execute(stmt)
             exc_handler.subject = base_subject
 
@@ -120,7 +117,7 @@ def http_queue_jobs(req:func.HttpRequest):
 
 # send daily job report 
 @app.timer_trigger('timer', '0 15 11,23 * *', run_on_startup=False)
-def send_daily_instance_report(timer:func.timer.TimerRequest):
+def send_daily_instance_report(timer:func.TimerRequest):
     with ExitStack() as stack:
 
         exc_handler = stack.enter_context(EmailExceptionHandler())
