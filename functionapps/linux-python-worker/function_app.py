@@ -2,7 +2,6 @@
 import azure.functions as func
 
 # tcgds imports
-from tcgds.auth import Auth
 from tcgds.reporting import EmailExceptionHandler
 from tcgds.jobs import JOBS_QUEUE
 
@@ -33,7 +32,7 @@ app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
 
 
-@app.queue_trigger('message', JOBS_QUEUE, 'JOB_QUEUE_CONNECTION_STRING')
+@app.queue_trigger('message', JOBS_QUEUE, 'Jobs_Queue_Connection_String')
 def job_orchestrator(message:func.QueueMessage):
     with ExitStack() as stack:
         exc_handler = stack.enter_context(EmailExceptionHandler())
