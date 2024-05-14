@@ -1,12 +1,13 @@
 # azure imports 
 import azure.functions as func
+from azure.identity import EnvironmentCredential
+from azure.keyvault.secrets import SecretClient
 from azure.storage.queue import QueueClient, TextBase64EncodePolicy
 
 # tcgds imports
 from tcgds.reporting import send_email_report, EmailExceptionHandler, pandas_to_html_col_foramtter
 from tcgds.postgres import psql_connection_string
 from tcgds.jobs import Job, Instance, JOBS_QUEUE
-from tcgds.customauth import CustomAuth
 
 
 # other
@@ -21,12 +22,17 @@ from sqlalchemy import create_engine, select, insert
 from contextlib import ExitStack
 
 
+azure_key_vault_string = "https://{vault_name}.vault.azure.net/"
+TCGDS_KEY_VAULT = "TCGDSVault"
+az_credential = EnvironmentCredential()
+secret_client = SecretClient(azure_key_vault_string.format(vault_name=TCGDS_KEY_VAULT), credential=az_credential)
 
+psql_username = secret_client.get_secret('PSQLUsername').value  
+psql_password = secret_client.get_secret('PSQLPassword').value
 
 app = func.FunctionApp()
 
-with CustomAuth('virtual') as auth:
-    psql_username, psql_password = auth.get_postgres_credentials() 
+
 
 
 
