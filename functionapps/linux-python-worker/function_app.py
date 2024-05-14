@@ -1,13 +1,9 @@
 # azure imports 
 import azure.functions as func
-import azure.durable_functions as durfunc
 
 # tcgds imports
 from tcgds.auth import Auth
 from tcgds.reporting import EmailExceptionHandler
-from tcgds.postgres import psql_connection_string
-from tcgds.utils import to_snake
-from tcgds.scrape import Scraper, Step, base_headers
 from tcgds.jobs import JOBS_QUEUE
 
 

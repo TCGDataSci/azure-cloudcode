@@ -61,7 +61,8 @@ def queue_jobs(timer:func.TimerRequest):
                 # add to Job queue 
             if croniter.match_range(cron_expr, time_now, twelve_hours_later):
                 message = row[1].to_dict()
-                job_name = message['job_name']
+                job_name = message.pop('name')
+                message['job_name'] = job_name
                 exc_handler.subject = base_subject + f'Failed to queue job {job_name}'
                 message['instance_id'] = uuid.uuid4().hex # create instance id for operation execution
                 encoder = TextBase64EncodePolicy()
@@ -116,7 +117,7 @@ def http_queue_jobs(req:func.HttpRequest):
 
 
 # send daily job report 
-@app.timer_trigger('timer', '0 15 11,23 * *', run_on_startup=False)
+@app.timer_trigger('timer', '0 15 11,23 * * *', run_on_startup=False)
 def send_daily_instance_report(timer:func.TimerRequest):
     with ExitStack() as stack:
 
