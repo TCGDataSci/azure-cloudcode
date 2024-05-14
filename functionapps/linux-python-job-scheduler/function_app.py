@@ -6,7 +6,7 @@ from azure.storage.queue import QueueClient, TextBase64EncodePolicy
 from tcgds.reporting import send_email_report, EmailExceptionHandler, pandas_to_html_col_foramtter
 from tcgds.postgres import psql_connection_string
 from tcgds.jobs import Job, Instance, JOBS_QUEUE
-from tcgds.auth import Auth
+from tcgds.auth import CustomAuth
 
 
 # other
@@ -25,7 +25,7 @@ from contextlib import ExitStack
 
 app = func.FunctionApp()
 
-with Auth('virtual') as auth:
+with CustomAuth('virtual') as auth:
     psql_username, psql_password = auth.get_postgres_credentials() 
 
 
