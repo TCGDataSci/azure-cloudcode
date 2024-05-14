@@ -8,9 +8,6 @@ import requests
 # define functionapp
 app = func.FunctionApp()
 
-from tcgds.auth import Auth
-with Auth() as auth:
-    auth.get_postgres_credentials()
 
 ### APIS ###
 
