@@ -6,7 +6,7 @@ from azure.storage.queue import QueueClient, TextBase64EncodePolicy
 from tcgds.reporting import send_email_report, EmailExceptionHandler, pandas_to_html_col_foramtter
 from tcgds.postgres import psql_connection_string
 from tcgds.jobs import Job, Instance, JOBS_QUEUE
-from tcgds.auth import CustomAuth
+from tcgds.customauth import CustomAuth
 
 
 # other
