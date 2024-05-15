@@ -30,9 +30,9 @@ secret_client = SecretClient(azure_key_vault_string.format(vault_name=TCGDS_KEY_
 psql_username = secret_client.get_secret('PSQLUsername').value  
 psql_password = secret_client.get_secret('PSQLPassword').value
 
+
+
 app = func.FunctionApp()
-
-
 
 
 
