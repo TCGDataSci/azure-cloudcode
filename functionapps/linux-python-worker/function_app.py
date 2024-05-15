@@ -19,7 +19,7 @@ from urllib.parse import quote, unquote
 
 # scrapers
 from tcgds.scrapes.dks import dks_product_scrape, dks_location_scrape
-from tcgds.scrapes.sbux import sbux_location_scrape, sbux_unioniztion_scrape
+from tcgds.scrapes.sbux import sbux_location_scrape, sbux_unionization_scrape
 # from tcgds.scrapes.five import five_location_scrape, five_product_scrape  
 # from tcgds.scrapes.bookingdotcom import bookingdotcom_location_scrape
 # from tcgds.scrapes.chtr import chtr_zipcode_scrape
@@ -62,7 +62,7 @@ def job_orchestrator(message:func.QueueMessage):
             sbux_location_scrape(json_message)
 
         if function_name == 'sbux_unionization_scrape':
-            sbux_unioniztion_scrape(json_message)
+            sbux_unionization_scrape(json_message)
 
         # if function_name == 'five_locaton_scrape':
         #     five_location_scrape(json_message)
