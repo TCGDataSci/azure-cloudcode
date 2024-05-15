@@ -76,12 +76,12 @@ def queue_jobs(timer:func.TimerRequest):
                 queuetime = ((start_time:=croniter(cron_expr).get_next(datetime)) - croniter(cron_expr).get_current(datetime)).total_seconds()
                 queue_client.send_message(encoded_message, visibility_timeout=queuetime)
                 exc_handler.subject = base_subject
-            # add instance to Instance table in postgres
-            exc_handler.subject = base_subject + f'Failed to update Instance table for operation {job_name}'
-            status = 'queued'
-            stmt = (insert(Instance).values(id=message['instance_id'], job_id=message['job_id'], status=status, start_time=start_time))
-            psql_connection.execute(stmt)
-            exc_handler.subject = base_subject
+                # add instance to Instance table in postgres
+                exc_handler.subject = base_subject + f'Failed to update Instance table for operation {job_name}'
+                status = 'queued'
+                stmt = (insert(Instance).values(id=message['instance_id'], job_id=message['job_id'], status=status, start_time=start_time))
+                psql_connection.execute(stmt)
+                exc_handler.subject = base_subject
 
 
 
