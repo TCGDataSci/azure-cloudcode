@@ -130,7 +130,7 @@ def send_daily_instance_report(timer:func.TimerRequest):
         exc_handler = stack.enter_context(EmailExceptionHandler())
         exc_handler.subject = "Daily Instance Report Exception:"
 
-        pg_engine = create_engine(psql_connection_string.format(user=psql_username, passwrod=psql_password))
+        pg_engine = create_engine(psql_connection_string.format(user=psql_username, password=psql_password))
         pg_connection = stack.enter_context(pg_engine.connect())
 
         stati_lst = ['queued', 'running', 'failed', 'completed']
