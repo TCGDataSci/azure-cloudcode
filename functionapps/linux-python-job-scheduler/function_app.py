@@ -97,9 +97,10 @@ def http_queue_jobs(req:func.HttpRequest):
         queue_client = stack.enter_context(QueueClient.from_connection_string(os.environ['Job_Queue_Connection_String'], JOBS_QUEUE))
 
         # add job to queue
-        message = req.get_json()
+        message:dict = req.get_json()
         cron_expr = message['cron_schedule']
-        job_name = message['name']
+        job_name = message.pop('name')
+        message['job_name'] = job_name
         exc_handler.subject = base_subject + f'Failed to queue job {job_name}'
         message['instance_id'] = uuid.uuid4().hex # create instance id for operation execution
         encoder = TextBase64EncodePolicy()
