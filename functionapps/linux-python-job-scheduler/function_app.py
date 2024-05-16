@@ -56,8 +56,7 @@ def queue_jobs(timer:func.TimerRequest):
 
         exc_handler.subject = base_subject + 'Querying Job from Postgres'
         # get Job meta data
-        q = select(Job)
-        q_results = psql_connection.execute(q).all()
+        q_results = psql_connection.execute(select(Job)).all()
         results_df = pd.DataFrame(q_results)
         exc_handler.subject = None
 
@@ -79,7 +78,7 @@ def queue_jobs(timer:func.TimerRequest):
                 # add instance to Instance table in postgres
                 exc_handler.subject = base_subject + f'Failed to update Instance table for operation {job_name}'
                 status = 'queued'
-                stmt = (insert(Instance).values(id=message['instance_id'], job_id=message['job_id'], status=status, start_time=start_time))
+                stmt = (insert(Instance).values(id=message['instance_id'], job_id=message['id'], status=status, start_time=start_time))
                 psql_connection.execute(stmt)
                 exc_handler.subject = base_subject
 
@@ -100,7 +99,7 @@ def http_queue_jobs(req:func.HttpRequest):
         # add job to queue
         message = req.get_json()
         cron_expr = message['cron_schedule']
-        job_name = message['job_name']
+        job_name = message['name']
         exc_handler.subject = base_subject + f'Failed to queue job {job_name}'
         message['instance_id'] = uuid.uuid4().hex # create instance id for operation execution
         encoder = TextBase64EncodePolicy()
@@ -113,7 +112,7 @@ def http_queue_jobs(req:func.HttpRequest):
         status = 'queued'
         stmt = (
             insert(Instance).
-            values(id=message['instance_id'], job_id=message['job_id'], status=status, start_time=start_time)
+            values(id=message['instance_id'], job_id=message['id'], status=status, start_time=start_time)
         )
         psql_connection.execute(stmt)
         exc_handler.subject = base_subject
