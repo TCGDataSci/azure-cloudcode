@@ -56,7 +56,7 @@ def queue_jobs(timer:func.TimerRequest):
 
         exc_handler.subject = base_subject + 'Querying Job from Postgres'
         # get Job meta data
-        q_results = psql_connection.execute(select(Job)).all()
+        q_results = psql_connection.execute(select(Job).where(status='active')).all()
         results_df = pd.DataFrame(q_results)
         exc_handler.subject = None
 
@@ -137,10 +137,13 @@ def send_daily_instance_report(timer:func.TimerRequest):
         for status in stati_lst:            
             if status=="completed" or status=="failed":
                 twelve_hrs_ago = (datetime.now(tz=UTC) - relativedelta(hours=12)) 
-                query = select(Job.name, Job.id, Instance.id, Instance.status, Instance.start_time, Instance.machine).join(Job, Instance.job_id==Job.id).where(Instance.status==status, Instance.end_time>=twelve_hrs_ago) 
+                query = select(Job.name, Job.id, Instance.id, Instance.status, Instance.start_time, Instance.end_time, Instance.machine).join(Job, Instance.job_id==Job.id).where(Instance.status==status, Instance.end_time>=twelve_hrs_ago) 
             else:
-                query = select(Job.name, Job.id, Instance.id, Instance.status, Instance.start_time, Instance.machine).join(Job, Instance.job_id==Job.id).where(Instance.status==status) 
+                query = select(Job.name, Job.id, Instance.id, Instance.status, Instance.start_time, Instance.end_time, Instance.machine).join(Job, Instance.job_id==Job.id).where(Instance.status==status) 
             results = pd.DataFrame(pg_connection.execute(query).all())
+            results.rename(columns={'id_1':'instance_id'}, inplace=True)
+            if status=='completed' or status=='failed':
+                results['elapsed_time'] = results['end_time'] - results['start_time']
             email_body = f'{status.capitalize()}:<br>'
             email_body+=results.to_html(index=False, formatters=[pandas_to_html_col_foramtter]*results.shape[1])
             email_body+='<br>'
