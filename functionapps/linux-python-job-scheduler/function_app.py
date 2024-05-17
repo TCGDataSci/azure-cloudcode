@@ -56,7 +56,8 @@ def queue_jobs(timer:func.TimerRequest):
 
         exc_handler.subject = base_subject + 'Querying Job from Postgres'
         # get Job meta data
-        q_results = psql_connection.execute(select(Job).where(status='active')).all()
+        q_results = psql_connection.execute((select(Job).where(Job.status=='active'))).all()
+
         results_df = pd.DataFrame(q_results)
         exc_handler.subject = base_subject
 
