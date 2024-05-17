@@ -58,7 +58,7 @@ def queue_jobs(timer:func.TimerRequest):
         # get Job meta data
         q_results = psql_connection.execute(select(Job).where(status='active')).all()
         results_df = pd.DataFrame(q_results)
-        exc_handler.subject = None
+        exc_handler.subject = base_subject
 
         # add Job within 12 hours to queues
         for row in results_df.iterrows():
