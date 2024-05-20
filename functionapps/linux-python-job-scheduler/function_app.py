@@ -142,10 +142,11 @@ def send_daily_instance_report(timer:func.TimerRequest):
             else:
                 query = select(Job.name, Job.id, Instance.id, Instance.status, Instance.start_time, Instance.end_time, Instance.machine).join(Job, Instance.job_id==Job.id).where(Instance.status==status) 
             results = pd.DataFrame(pg_connection.execute(query).all())
-            results.rename(columns={'id_1':'instance_id'}, inplace=True)
-            if status=='completed' or status=='failed':
-                results['elapsed_time'] = results['end_time'] - results['start_time']
-            email_body = f'{status.capitalize()}:<br>'
-            email_body+=results.to_html(index=False, formatters=[pandas_to_html_col_foramtter]*results.shape[1])
-            email_body+='<br>'
+            if not results.empty:
+                results.rename(columns={'id_1':'instance_id'}, inplace=True)
+                if status=='completed' or status=='failed':
+                    results['elapsed_time'] = results['end_time'] - results['start_time']
+                email_body = f'{status.capitalize()}:<br>'
+                email_body+=results.to_html(index=False, formatters=[pandas_to_html_col_foramtter]*results.shape[1])
+                email_body+='<br>'
         send_email_report('Daily Instance Report', email_body)
