@@ -79,8 +79,9 @@ def queue_jobs(timer:func.TimerRequest):
                 # add instance to Instance table in postgres
                 exc_handler.subject = base_subject + f'Failed to update Instance table for operation {job_name}'
                 status = 'queued'
-                stmt = (insert(Instance).values(id=message['instance_id'], job_id=message['id'], status=status, start_time=start_time))
+                stmt = insert(Instance).values(id=message['instance_id'], job_id=message['id'], status=status, start_time=start_time)
                 psql_connection.execute(stmt)
+                psql_connection.commit()
                 exc_handler.subject = base_subject
 
 
