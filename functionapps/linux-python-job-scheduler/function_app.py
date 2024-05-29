@@ -7,7 +7,7 @@ from azure.storage.queue import QueueClient, TextBase64EncodePolicy
 # tcgds imports
 from tcgds.reporting import send_email_report, EmailExceptionHandler, pandas_to_html_col_foramtter
 from tcgds.postgres import psql_connection_string
-from tcgds.jobs import Job, Instance, JOBS_QUEUE
+from tcgds.jobs import Job, Instance, JOBS_QUEUE_NAME, JOBS_QUEUE_CONN_STR_NAME
 
 
 # other
@@ -46,7 +46,7 @@ def queue_jobs(timer:func.TimerRequest):
         exc_handler.subject = base_subject
         psql_engine = create_engine(psql_connection_string.format(user=psql_username, password=psql_password))
         psql_connection = stack.enter_context(psql_engine.connect())
-        queue_client = stack.enter_context(QueueClient.from_connection_string(os.environ['Job_Queue_Connection_String'], JOBS_QUEUE))
+        queue_client = stack.enter_context(QueueClient.from_connection_string(os.environ[JOBS_QUEUE_CONN_STR_NAME], JOBS_QUEUE_NAME))
         if timer.past_due:
             pass
         # set times
@@ -96,7 +96,7 @@ def http_queue_jobs(req:func.HttpRequest):
         exc_handler.subject = base_subject
         psql_engine = create_engine(psql_connection_string.format(user=psql_username, password=psql_password))
         psql_connection = stack.enter_context(psql_engine.connect())
-        queue_client = stack.enter_context(QueueClient.from_connection_string(os.environ['Job_Queue_Connection_String'], JOBS_QUEUE))
+        queue_client = stack.enter_context(QueueClient.from_connection_string(os.environ[JOBS_QUEUE_CONN_STR_NAME], JOBS_QUEUE_NAME))
 
         # add job to queue
         message:dict = req.get_json()
@@ -118,9 +118,46 @@ def http_queue_jobs(req:func.HttpRequest):
             values(id=message['instance_id'], job_id=message['id'], status=status, start_time=start_time)
         )
         psql_connection.execute(stmt)
+        psql_connection.commit()
         exc_handler.subject = base_subject
 
 
+
+# run job via http endpoint
+@app.route('job/run/{jobname}')
+def http_run_jobs(req:func.HttpRequest):
+    # initiate connections
+    with ExitStack() as stack:
+        exc_handler = stack.enter_context(EmailExceptionHandler())
+        base_subject = 'Job Queueing Exception:'
+        exc_handler.subject = base_subject
+        psql_engine = create_engine(psql_connection_string.format(user=psql_username, password=psql_password))
+        psql_connection = stack.enter_context(psql_engine.connect())
+        queue_client = stack.enter_context(QueueClient.from_connection_string(os.environ[JOBS_QUEUE_CONN_STR_NAME], JOBS_QUEUE_NAME))
+
+        # add job to queue
+        job_name:str = req.route_params.get('jobname')
+        result = psql_connection.execute(select(Job).where(Job.name==job_name)).first()[0]
+        
+        message = dict(result)
+        job_name = message.pop('name')
+        message['job_name'] = job_name
+        exc_handler.subject = base_subject + f'Failed to queue job {job_name}'
+        message['instance_id'] = uuid.uuid4().hex # create instance id for operation execution
+        encoder = TextBase64EncodePolicy()
+        encoded_message = encoder.encode(json.dumps(message))
+        queue_client.send_message(encoded_message)
+        exc_handler.subject = base_subject
+        # add instance to Instance table in postgres
+        exc_handler.subject = base_subject + f'Failed to update Instance table for operation {job_name}'
+        status = 'queued'
+        stmt = (
+            insert(Instance).
+            values(id=message['instance_id'], job_id=message['id'], status=status, start_time=datetime.now(UTC))
+        )
+        psql_connection.execute(stmt)
+        psql_connection.commit()
+        exc_handler.subject = base_subject 
 
 
 
