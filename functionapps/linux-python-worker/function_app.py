@@ -39,10 +39,9 @@ def job_orchestrator(message:func.QueueMessage):
         exc_handler.subject = 'Job Orchestrator'
         
 
-
         json_message = message.get_json()
         function_name = json_message['function_name']
-
+        exc_handler.subject = exc_handler.subject + ': ' + json_message['job_name']
 
         # apis
         if function_name == 'sensortower_update':
@@ -51,7 +50,7 @@ def job_orchestrator(message:func.QueueMessage):
         if function_name == 'similarweb_update':
             pass
 
-
+        # scrapes
         if function_name == 'dks_location_scrape':
             dks_location_scrape(json_message)
 
