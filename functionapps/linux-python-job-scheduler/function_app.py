@@ -101,9 +101,11 @@ def http_queue_jobs(req:func.HttpRequest):
             # add job to queue
             # add job to queue
             job_name:str = req.route_params.get('jobname')
+            cron_start_time= req.get_json()['start_time']
             result = psql_connection.execute(select(Job).where(Job.name==job_name)).first()
-            
             message = result._asdict()
+            if cron_start_time is not None:
+                message['cron_schedule'] = cron_start_time
             job_name = message.pop('name')
             message['job_name'] = job_name
             exc_handler.subject = base_subject + f'Failed to queue job {job_name}'
