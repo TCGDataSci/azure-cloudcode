@@ -89,39 +89,43 @@ def queue_jobs(timer:func.TimerRequest):
 @app.route('job/queue/{jobname}')
 def http_queue_jobs(req:func.HttpRequest):
     # initiate connections
-    with ExitStack() as stack:
-        exc_handler = stack.enter_context(EmailExceptionHandler())
-        base_subject = 'Job Queueing Exception:'
-        exc_handler.subject = base_subject
-        psql_engine = create_engine(psql_connection_string.format(user=psql_username, password=psql_password))
-        psql_connection = stack.enter_context(psql_engine.connect())
-        queue_client = stack.enter_context(QueueClient.from_connection_string(os.environ[JOBS_QUEUE_CONN_STR_NAME], JOBS_QUEUE_NAME))
+    try:
+        with ExitStack() as stack:
+            exc_handler = stack.enter_context(EmailExceptionHandler())
+            base_subject = 'Job Queueing Exception:'
+            exc_handler.subject = base_subject
+            psql_engine = create_engine(psql_connection_string.format(user=psql_username, password=psql_password))
+            psql_connection = stack.enter_context(psql_engine.connect())
+            queue_client = stack.enter_context(QueueClient.from_connection_string(os.environ[JOBS_QUEUE_CONN_STR_NAME], JOBS_QUEUE_NAME))
 
-        # add job to queue
-        # add job to queue
-        job_name:str = req.route_params.get('jobname')
-        result = psql_connection.execute(select(Job).where(Job.name==job_name)).first()
+            # add job to queue
+            # add job to queue
+            job_name:str = req.route_params.get('jobname')
+            result = psql_connection.execute(select(Job).where(Job.name==job_name)).first()
+            
+            message = result._asdict()
+            job_name = message.pop('name')
+            message['job_name'] = job_name
+            exc_handler.subject = base_subject + f'Failed to queue job {job_name}'
+            message['instance_id'] = uuid.uuid4().hex # create instance id for operation execution
+            encoder = TextBase64EncodePolicy()
+            encoded_message = encoder.encode(json.dumps(message))
+            queuetime = ((start_time:=croniter(message['cron_schedule']).get_next(datetime)) - croniter(message['cron_schedule']).get_current(datetime)).total_seconds()
+            queue_client.send_message(encoded_message, visibility_timeout=queuetime)
+            exc_handler.subject = base_subject
         
-        message = result._asdict()
-        job_name = message.pop('name')
-        message['job_name'] = job_name
-        exc_handler.subject = base_subject + f'Failed to queue job {job_name}'
-        message['instance_id'] = uuid.uuid4().hex # create instance id for operation execution
-        encoder = TextBase64EncodePolicy()
-        encoded_message = encoder.encode(json.dumps(message))
-        queuetime = ((start_time:=croniter(message['cron_schedule']).get_next(datetime)) - croniter(message['cron_schedule']).get_current(datetime)).total_seconds()
-        queue_client.send_message(encoded_message, visibility_timeout=queuetime)
-        exc_handler.subject = base_subject
-       
-        # add instance to Instance table in postgres
-        exc_handler.subject = base_subject + f'Failed to update Instance table for operation {job_name}'
-        stmt = (
-            insert(Instance).
-            values(id=message['instance_id'], job_id=message['id'], status='queued', start_time=start_time)
-        )
-        psql_connection.execute(stmt)
-        psql_connection.commit()
-        exc_handler.subject = base_subject
+            # add instance to Instance table in postgres
+            exc_handler.subject = base_subject + f'Failed to update Instance table for operation {job_name}'
+            stmt = (
+                insert(Instance).
+                values(id=message['instance_id'], job_id=message['id'], status='queued', start_time=start_time)
+            )
+            psql_connection.execute(stmt)
+            psql_connection.commit()
+            exc_handler.subject = base_subject
+        return func.HttpResponse(json.dumps(message), status_code=200)
+    except Exception:
+        return func.HttpResponse(f'Failed to queue job: {job_name}', status_code=500)
 
 
 
@@ -129,62 +133,64 @@ def http_queue_jobs(req:func.HttpRequest):
 @app.route('job/run/{jobname}')
 def http_run_jobs(req:func.HttpRequest):
     # initiate connections
-    with ExitStack() as stack:
-        exc_handler = stack.enter_context(EmailExceptionHandler())
-        base_subject = 'Job Running Exception:'
-        exc_handler.subject = base_subject
-        psql_engine = create_engine(psql_connection_string.format(user=psql_username, password=psql_password))
-        psql_connection = stack.enter_context(psql_engine.connect())
-        queue_client = stack.enter_context(QueueClient.from_connection_string(os.environ[JOBS_QUEUE_CONN_STR_NAME], JOBS_QUEUE_NAME))
-        # create queue message
-        job_name:str = req.route_params.get('jobname')
-        result = psql_connection.execute(select(Job).where(Job.name==job_name)).first()
-        message = result._asdict()
-        job_name = message.pop('name')
-        message['job_name'] = job_name
-        exc_handler.subject = base_subject + f'Failed to queue job {job_name}'
-        message['instance_id'] = uuid.uuid4().hex # create instance id for operation execution
+    try:
+        with ExitStack() as stack:
+            exc_handler = stack.enter_context(EmailExceptionHandler())
+            psql_engine = create_engine(psql_connection_string.format(user=psql_username, password=psql_password))
+            psql_connection = stack.enter_context(psql_engine.connect())
+            queue_client = stack.enter_context(QueueClient.from_connection_string(os.environ[JOBS_QUEUE_CONN_STR_NAME], JOBS_QUEUE_NAME))
+            # create queue message
+            job_name:str = req.route_params.get('jobname')
+            result = psql_connection.execute(select(Job).where(Job.name==job_name)).first()
+            message = result._asdict()
+            job_name = message.pop('name')
+            message['job_name'] = job_name
+            message['instance_id'] = uuid.uuid4().hex # create instance id for operation execution
 
-        # add instance to Instance table in postgres
-        exc_handler.subject = base_subject + f'Failed to update Instance table for operation {job_name}'
-        stmt = (
-            insert(Instance).
-            values(id=message['instance_id'], job_id=message['id'], status='queued')
-        )
-        psql_connection.execute(stmt)
-        psql_connection.commit()
-        # add message to queue
-        encoder = TextBase64EncodePolicy()
-        encoded_message = encoder.encode(json.dumps(message))
-        queue_client.send_message(encoded_message)
-
+            # add instance to Instance table in postgres
+            stmt = (
+                insert(Instance).
+                values(id=message['instance_id'], job_id=message['id'], status='queued')
+            )
+            psql_connection.execute(stmt)
+            psql_connection.commit()
+            # add message to queue
+            encoder = TextBase64EncodePolicy()
+            encoded_message = encoder.encode(json.dumps(message))
+            queue_client.send_message(encoded_message)
+        return func.HttpResponse(json.dumps(message), status_code=200)
+    except Exception:
+        return func.HttpResponse(f'{job_name} failed to run', status_code=500)
 
 
 
 # restart job instance via http
 @app.route('instance/restart/{instanceid}')
 def http_restart_instance(req:func.HttpRequest):
-    with ExitStack() as stack:
-        exc_handler = stack.enter_context(EmailExceptionHandler())
-        exc_handler.subject = 'Instance Restarting Exception'
-        psql_engine = create_engine(psql_connection_string.format(user=psql_username, password=psql_password))
-        psql_connection = stack.enter_context(psql_engine.connect())
+    try:
+        with ExitStack() as stack:
+            exc_handler = stack.enter_context(EmailExceptionHandler())
+            exc_handler.subject = 'Instance Restarting Exception'
+            psql_engine = create_engine(psql_connection_string.format(user=psql_username, password=psql_password))
+            psql_connection = stack.enter_context(psql_engine.connect())
 
 
-        instance_id:str = req.route_params.get('instanceid')
-        job_id = psql_connection.execute(select(Instance.job_id).where(Instance.id==instance_id)).first()[0]
-        q_results = psql_connection.execute(select(Job).where(Job.id == job_id)).first()
-        message = q_results._asdict()
-        job_name = message.pop('name')
-        message['job_name'] = job_name
-        message['instance_id'] = instance_id
+            instance_id:str = req.route_params.get('instanceid')
+            job_id = psql_connection.execute(select(Instance.job_id).where(Instance.id==instance_id)).first()[0]
+            q_results = psql_connection.execute(select(Job).where(Job.id == job_id)).first()
+            message = q_results._asdict()
+            job_name = message.pop('name')
+            message['job_name'] = job_name
+            message['instance_id'] = instance_id
 
-        encoder = TextBase64EncodePolicy()
-        encoded_message = encoder.encode(json.dumps(message))
+            encoder = TextBase64EncodePolicy()
+            encoded_message = encoder.encode(json.dumps(message))
 
-        queue_client = stack.enter_context(QueueClient.from_connection_string(os.environ[JOBS_QUEUE_CONN_STR_NAME], JOBS_QUEUE_NAME))
-        queue_client.send_message(encoded_message)
-
+            queue_client = stack.enter_context(QueueClient.from_connection_string(os.environ[JOBS_QUEUE_CONN_STR_NAME], JOBS_QUEUE_NAME))
+            queue_client.send_message(encoded_message)
+        return func.HttpResponse(json.dumps(message), status_code=200)
+    except Exception:
+        return func.HttpResponse(f'Failed to restart instance with instance_id: {instance_id}', status_code=500)
 
 
 
