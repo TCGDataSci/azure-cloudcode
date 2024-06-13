@@ -34,7 +34,7 @@ app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
 # sensortower data update
 @app.route(route="apis/sensortower/update", auth_level=func.AuthLevel.ANONYMOUS)
-async def sensortower_update(req:func.HttpRequest):
+def sensortower_update(req:func.HttpRequest):
     update_freqs = ['daily']
     if (tday:=datetime.today()).weekday()==0:
         update_freqs.append('weekly')
@@ -43,24 +43,18 @@ async def sensortower_update(req:func.HttpRequest):
         if tday.month in [1, 4, 7, 10]:
             update_freqs.append('quarterly')
  
-    async with Sensortower() as sens:
-        all_update_tasks = [] 
+    with Sensortower() as sens:
         for update_freq in update_freqs: 
-            @aioreport('Sensortower update ' + update_freq)
-            async def main_func(update_freq:str):
-                tasks = []
-                for platform in ['unified', 'ios', 'android']:
-                    groups = sens.get_update_params_groups(platform, update_freq) 
-                    if groups is not None:
-                        for params in groups.groups.keys():
-                            first_group:pd.DataFrame = groups.get_group(params) 
-                            update_args = {'app_ids':first_group['app_id'].to_list(),   
-                                        'platform':platform} 
-                            update_args.update(json.loads(params)) 
-                            tasks.append(sens.update_data(**update_args)) 
-                await asyncio.gather(*tasks)
-            all_update_tasks.append(main_func(update_freq))
-        await asyncio.gather(*all_update_tasks) 
+            for platform in ['unified', 'ios', 'android']:
+                groups = sens.get_update_params_groups(platform, update_freq) 
+                if groups is not None:
+                    for params in groups.groups.keys():
+                        first_group:pd.DataFrame = groups.get_group(params) 
+                        update_args = {'app_ids':first_group['app_id'].to_list(),   
+                                    'platform':platform} 
+                        update_args.update(json.loads(params)) 
+                        sens.update_data(**update_args) 
+ 
  
 
 # similarweb data update function
