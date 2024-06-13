@@ -32,7 +32,7 @@ psql_password = secret_client.get_secret('PSQLPassword').value
 
 
 
-app = func.FunctionApp()
+app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
 
 
