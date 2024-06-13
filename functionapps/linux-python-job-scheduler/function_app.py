@@ -138,6 +138,7 @@ def http_run_jobs(req:func.HttpRequest):
     try:
         with ExitStack() as stack:
             exc_handler = stack.enter_context(EmailExceptionHandler())
+            exc_handler.subject = 'Job Run Exception'
             psql_engine = create_engine(psql_connection_string.format(user=psql_username, password=psql_password))
             psql_connection = stack.enter_context(psql_engine.connect())
             queue_client = stack.enter_context(QueueClient.from_connection_string(os.environ[JOBS_QUEUE_CONN_STR_NAME], JOBS_QUEUE_NAME))
