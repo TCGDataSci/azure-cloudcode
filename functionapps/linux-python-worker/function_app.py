@@ -89,7 +89,7 @@ def job_orchestrator(message:func.QueueMessage):
 
 
         if function_name == '13f_update':
-            with Whalewisdom() as whale:
+            with Whalewisdom() as whale:    
                 whale.update_holdings()
 
         # scrapes
