@@ -51,6 +51,7 @@ def job_orchestrator(message:func.QueueMessage):
 
         # apis
         if function_name == 'sensortower_update':
+            exc_handler.subject = function_name
             update_freqs = ['daily']
             if (tday:=datetime.today()).weekday()==0:
                 update_freqs.append('weekly')
@@ -73,6 +74,7 @@ def job_orchestrator(message:func.QueueMessage):
 
 
         if function_name == 'similarweb_update':
+            exc_handler.subject = function_name
             update_freqs = ['daily']
             if (tday:=datetime.today()).weekday()==0:
                 update_freqs.append('weekly')
