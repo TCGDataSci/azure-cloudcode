@@ -47,7 +47,7 @@ def job_orchestrator(message:func.QueueMessage):
 
         json_message = message.get_json()
         function_name = json_message['function_name']
-        exc_handler.subject = json_message['job_name']
+        exc_handler.subject = json_message['job_name'] + ' ' + json_message['instance_id']
 
         # apis
         if function_name == 'sensortower_update':
